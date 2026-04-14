@@ -1,0 +1,127 @@
+/* ─── Global Mobile Responsive Overrides ─── */
+
+/* Ensure the viewport meta tag works correctly */
+html, body {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ─── Ant Design Card title + extra wrap on small screens ─── */
+@media (max-width: 576px) {
+  .ant-card-head {
+    flex-wrap: wrap;
+    min-height: auto !important;
+    padding: 8px 12px !important;
+  }
+  .ant-card-head-title {
+    flex: 1 1 100% !important;
+    padding: 4px 0 !important;
+    font-size: 16px !important;
+    overflow: visible !important;
+    white-space: normal !important;
+  }
+  .ant-card-extra {
+    flex: 1 1 100% !important;
+    margin-left: 0 !important;
+    padding: 4px 0 !important;
+  }
+  .ant-card-body {
+    padding: 12px !important;
+  }
+
+  /* Tables: smaller font on mobile */
+  .ant-table {
+    font-size: 13px;
+  }
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 6px 8px !important;
+  }
+
+  /* Descriptions: stack on mobile */
+  .ant-descriptions-item-label {
+    font-size: 12px;
+  }
+  .ant-descriptions-item-content {
+    font-size: 13px;
+  }
+
+  /* Form items: reduce bottom margin on mobile */
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+
+  /* Statistic value: smaller on mobile */
+  .ant-statistic-content-value {
+    font-size: 18px !important;
+  }
+  .ant-statistic-title {
+    font-size: 12px !important;
+  }
+
+  /* Page title headings */
+  h2 {
+    font-size: 18px !important;
+  }
+
+  /* Ant Layout Header: adjust height on mobile */
+  .ant-layout-header {
+    height: 48px !important;
+    line-height: 48px !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  .ant-card-head-title {
+    white-space: normal !important;
+    overflow: visible !important;
+  }
+}
+
+/* Ensure images don't overflow */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fix for Ant Design InputNumber on mobile */
+.ant-input-number {
+  width: 100%;
+}
+
+/* ─── Sidebar Quick-Add Plus Button ─── */
+/* Hidden by default, visible on menu-item hover */
+
+/* Dark theme sidebar (desktop) */
+.ant-layout-sider .ant-menu-item .anticon-plus {
+  color: rgba(255, 255, 255, 0.65);
+  opacity: 0;
+  transition: all 0.2s;
+}
+.ant-layout-sider .ant-menu-item:hover .anticon-plus,
+.ant-layout-sider .ant-menu-item-selected .anticon-plus {
+  opacity: 1;
+}
+.ant-layout-sider .ant-menu-item .anticon-plus:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px;
+}
+
+/* Light theme drawer (mobile) */
+.ant-drawer .ant-menu-item .anticon-plus {
+  color: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: all 0.2s;
+}
+.ant-drawer .ant-menu-item:hover .anticon-plus,
+.ant-drawer .ant-menu-item-selected .anticon-plus {
+  opacity: 1;
+}
+.ant-drawer .ant-menu-item .anticon-plus:hover {
+  color: #1677ff;
+  background: rgba(22, 119, 255, 0.1) !important;
+  border-radius: 4px;
+}
+

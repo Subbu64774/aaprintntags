@@ -1,0 +1,482 @@
+{
+  "info": {
+    "_postman_id": "aapntags-full-journey-2026",
+    "name": "Sales App — Full Journey (One Customer)",
+    "description": "## One-Click Complete Journey\n\nRuns 7 sequential steps for a **single customer**:\n1. Login → token auto-saved\n2. Pick customer → `customerId` auto-saved\n3. Get products → 3 random products picked\n4. Create Purchase Order → random quantities, `orderId` saved\n5. Get Invoice Context from Order → `invoiceContext` saved\n6. Create Invoice (FINALIZED) → `invoiceId` + `invoiceAmount` saved\n7. Record Full Payment → `paymentId` saved, invoice marked PAID\n\n### To run the full journey:\n- Open **Collection Runner** → select all 7 steps → set **Iterations** (e.g., 5) to create 5 complete journeys\n- Each run creates a fresh PO → Invoice → Payment for the same customer\n\n### Variables to set before running:\n- `baseUrl`: change to your server (default: Oracle Cloud)\n- `username` / `password`: your tenant login\n- Optionally hardcode `customerId` to always use a specific customer",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",        "value": "http://140.245.210.80:8080/api", "description": "Change to http://localhost:8080/api for local dev" },
+    { "key": "username",       "value": "aapnt_user" },
+    { "key": "password",       "value": "user123" },
+    { "key": "token",          "value": "" },
+    { "key": "customerId",     "value": "", "description": "Leave blank to auto-pick first customer, or hardcode a specific ID" },
+    { "key": "customerName",   "value": "" },
+    { "key": "orderId",        "value": "" },
+    { "key": "invoiceId",      "value": "" },
+    { "key": "invoiceAmount",  "value": "" },
+    { "key": "paymentId",      "value": "" },
+    { "key": "product1Id",     "value": "" },
+    { "key": "product1Name",   "value": "" },
+    { "key": "product1Price",  "value": "100" },
+    { "key": "product2Id",     "value": "" },
+    { "key": "product2Name",   "value": "" },
+    { "key": "product2Price",  "value": "150" },
+    { "key": "product3Id",     "value": "" },
+    { "key": "product3Name",   "value": "" },
+    { "key": "product3Price",  "value": "200" },
+    { "key": "invoiceContext",  "value": "" },
+    { "key": "orderBody",      "value": "" },
+    { "key": "invoiceBody",    "value": "" },
+    { "key": "paymentBody",    "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "🔐 Step 1 — Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "pm.test('Login successful', () => pm.expect(pm.response.code).to.eql(200));",
+              "if (j.token) {",
+              "    pm.collectionVariables.set('token', j.token);",
+              "    pm.test('Token saved ✓', () => pm.expect(j.token).to.be.a('string'));",
+              "}",
+              "if (j.tenantId) pm.collectionVariables.set('tenantId', j.tenantId);",
+              "console.log('Logged in as:', j.username, '| Tenant:', j.tenantId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      }
+    },
+
+    {
+      "name": "👤 Step 2 — Pick Customer",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "const list = Array.isArray(j) ? j : (j.content || []);",
+              "",
+              "// If customerId is already hardcoded in variable, skip auto-pick",
+              "const hardcoded = pm.collectionVariables.get('customerId');",
+              "if (hardcoded && hardcoded !== '') {",
+              "    pm.test('Using hardcoded customerId: ' + hardcoded, () => true);",
+              "    console.log('Using fixed customerId:', hardcoded);",
+              "    return;",
+              "}",
+              "",
+              "if (list.length === 0) {",
+              "    pm.test('ERROR: No customers found — create a customer first or hardcode customerId', () => false);",
+              "    return;",
+              "}",
+              "",
+              "// Pick a random customer from the list for variety",
+              "const pick = list[Math.floor(Math.random() * list.length)];",
+              "pm.collectionVariables.set('customerId', pick.customerId);",
+              "pm.collectionVariables.set('customerName', pick.customerName);",
+              "pm.test('Customer picked: ' + pick.customerName + ' (ID=' + pick.customerId + ')', () => pm.expect(pick.customerId).to.be.a('number'));",
+              "console.log('Customer:', pick.customerName, '| ID:', pick.customerId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/customers/search?q=", "host": ["{{baseUrl}}"], "path": ["customers", "search"], "query": [{ "key": "q", "value": "" }] }
+      }
+    },
+
+    {
+      "name": "📦 Step 3 — Get Products (pick 3 random)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "const list = j.content || (Array.isArray(j) ? j : []);",
+              "",
+              "if (!list || list.length === 0) {",
+              "    pm.test('ERROR: No products found — create products first', () => false);",
+              "    return;",
+              "}",
+              "",
+              "// Shuffle to get different products each run",
+              "const shuffled = [...list].sort(() => Math.random() - 0.5);",
+              "const count = Math.min(3, shuffled.length);",
+              "",
+              "for (let i = 0; i < count; i++) {",
+              "    const p = shuffled[i];",
+              "    pm.collectionVariables.set('product' + (i+1) + 'Id', p.productId);",
+              "    pm.collectionVariables.set('product' + (i+1) + 'Name', p.productName || 'Product ' + (i+1));",
+              "    const price = parseFloat(p.productPrice || 100);",
+              "    pm.collectionVariables.set('product' + (i+1) + 'Price', isNaN(price) ? 100 : price);",
+              "    pm.collectionVariables.set('product' + (i+1) + 'Hsn', p.hsnCode || '');",
+              "}",
+              "",
+              "// If fewer than 3 products exist, reuse the last one for remaining slots",
+              "for (let i = count; i < 3; i++) {",
+              "    pm.collectionVariables.set('product' + (i+1) + 'Id', pm.collectionVariables.get('product' + count + 'Id'));",
+              "    pm.collectionVariables.set('product' + (i+1) + 'Name', pm.collectionVariables.get('product' + count + 'Name'));",
+              "    pm.collectionVariables.set('product' + (i+1) + 'Price', pm.collectionVariables.get('product' + count + 'Price'));",
+              "}",
+              "",
+              "const names = [];",
+              "for (let i = 1; i <= count; i++) names.push(pm.collectionVariables.get('product' + i + 'Name'));",
+              "pm.test('Products selected: ' + names.join(', '), () => pm.expect(count).to.be.above(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/products?page=0&size=100", "host": ["{{baseUrl}}"], "path": ["products"], "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "100" }] }
+      }
+    },
+
+    {
+      "name": "🛒 Step 4 — Create Purchase Order (random qty)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Random quantity between min and max",
+              "const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;",
+              "const today = new Date().toISOString().split('T')[0];",
+              "const poNum = 'PO-' + Date.now().toString().slice(-8);",
+              "const customerId = parseInt(pm.collectionVariables.get('customerId') || 1);",
+              "",
+              "const products = [];",
+              "for (let i = 1; i <= 3; i++) {",
+              "    const pid = pm.collectionVariables.get('product' + i + 'Id');",
+              "    if (!pid) continue;",
+              "    const price = parseFloat(pm.collectionVariables.get('product' + i + 'Price') || 100);",
+              "    products.push({",
+              "        productId: parseInt(pid),",
+              "        productName: pm.collectionVariables.get('product' + i + 'Name') || 'Product ' + i,",
+              "        quantity: rnd(2, 30),",
+              "        price: isNaN(price) ? 100 : price,",
+              "        size: ['A4', 'A3', '10x15cm', 'Custom', 'Standard'][rnd(0, 4)],",
+              "        description: 'Auto-test item ' + i,",
+              "        additionalWorks: ''",
+              "    });",
+              "}",
+              "",
+              "// Remove duplicates (if same product was picked multiple times from Step 3)",
+              "const seen = new Set();",
+              "const uniqueProducts = products.filter(p => {",
+              "    if (seen.has(p.productId)) return false;",
+              "    seen.add(p.productId);",
+              "    return true;",
+              "});",
+              "",
+              "const subtotal = uniqueProducts.reduce((s, p) => s + p.quantity * p.price, 0);",
+              "const cgst = parseFloat((subtotal * 0.09).toFixed(2));",
+              "const sgst = parseFloat((subtotal * 0.09).toFixed(2));",
+              "",
+              "const body = {",
+              "    poNumber: poNum,",
+              "    poDate: today,",
+              "    customerId: customerId,",
+              "    orderStatus: 'IN_PROGRESS',",
+              "    cgst: cgst,",
+              "    sgst: sgst,",
+              "    igst: 0,",
+              "    deliveryCharges: 0,",
+              "    shippingAddress: '',",
+              "    orderProductDTOList: uniqueProducts",
+              "};",
+              "",
+              "pm.collectionVariables.set('orderBody', JSON.stringify(body));",
+              "console.log('--- Creating PO:', poNum);",
+              "console.log('Customer ID:', customerId);",
+              "uniqueProducts.forEach(p => console.log('  Product:', p.productName, '| Qty:', p.quantity, '| Price:', p.price));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "pm.test('Purchase Order created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+              "if (j.orderId) {",
+              "    pm.collectionVariables.set('orderId', j.orderId);",
+              "    pm.test('PO Number: ' + j.poNumber + ' | Order ID: ' + j.orderId, () => pm.expect(j.orderId).to.be.a('number'));",
+              "    pm.test('Products in order: ' + j.orderProductDTOList.length, () => pm.expect(j.orderProductDTOList.length).to.be.above(0));",
+              "    console.log('Order created — ID:', j.orderId, '| PO:', j.poNumber, '| Total: Rs.', j.totalAmount);",
+              "} else {",
+              "    pm.test('ERROR: Order creation failed — ' + JSON.stringify(j), () => false);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{{orderBody}}" },
+        "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+      }
+    },
+
+    {
+      "name": "📋 Step 5 — Get Invoice Context from Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Invoice context loaded (200)', () => pm.expect(pm.response.code).to.eql(200));",
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('invoiceContext', JSON.stringify(j));",
+              "",
+              "const products = j.invoiceProductDTOList || [];",
+              "pm.test('Context has ' + products.length + ' product line(s)', () => pm.expect(products.length).to.be.above(0));",
+              "",
+              "// Log product details including orderProductId (required for invoice creation)",
+              "products.forEach(p => {",
+              "    console.log('  Line:', p.productName,",
+              "        '| orderProductId:', p.orderProductId,",
+              "        '| Qty:', p.orderedQuantity,",
+              "        '| Price:', p.price,",
+              "        '| HSN:', p.hsnCode);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/invoices/context/order/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["invoices", "context", "order", "{{orderId}}"] }
+      }
+    },
+
+    {
+      "name": "🧾 Step 6 — Create Invoice (FINALIZED, all products, full qty)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ctx = JSON.parse(pm.collectionVariables.get('invoiceContext') || '{}');",
+              "const orderId = parseInt(pm.collectionVariables.get('orderId'));",
+              "const customerId = parseInt(pm.collectionVariables.get('customerId'));",
+              "const today = new Date().toISOString().split('T')[0];",
+              "",
+              "// Map context products — invoice the FULL ordered quantity for each line",
+              "const products = (ctx.invoiceProductDTOList || []).map(p => ({",
+              "    orderProductId: p.orderProductId,",
+              "    productId: p.productId,",
+              "    quantity: p.orderedQuantity,          // Full qty = complete invoice",
+              "    price: p.price,",
+              "    size: p.size || '',",
+              "    description: p.description || '',",
+              "    hsnCode: p.hsnCode || '',",
+              "    selected: true",
+              "}));",
+              "",
+              "if (products.length === 0) {",
+              "    console.error('ERROR: No products in invoice context — did Step 5 succeed?');",
+              "}",
+              "",
+              "const subtotal = products.reduce((s, p) => s + ((p.quantity || 0) * (p.price || 0)), 0);",
+              "const cgst   = parseFloat((subtotal * 0.09).toFixed(2));",
+              "const sgst   = parseFloat((subtotal * 0.09).toFixed(2));",
+              "const total  = subtotal + cgst + sgst;",
+              "",
+              "const body = {",
+              "    orderId:   orderId,",
+              "    customerId: customerId,",
+              "    invoiceDate: today,",
+              "    invoiceStatus: 'FINALIZED',",
+              "    invoiceProductDTOList: products,",
+              "    cgst: cgst,",
+              "    sgst: sgst,",
+              "    igst: 0,",
+              "    deliveryCharges: 0,",
+              "    roundOff: false,",
+              "    roundOffAmount: 0,",
+              "    fscInvoice: false,",
+              "    remarks: 'Auto-generated test invoice'",
+              "};",
+              "",
+              "pm.collectionVariables.set('invoiceBody', JSON.stringify(body));",
+              "console.log('--- Creating Invoice for Order ID:', orderId);",
+              "console.log('Products:', products.length, '| Subtotal: Rs.', subtotal.toFixed(2), '| CGST:', cgst, '| SGST:', sgst, '| Total: Rs.', total.toFixed(2));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Invoice created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+              "const j = pm.response.json();",
+              "if (j.invoiceId) {",
+              "    pm.collectionVariables.set('invoiceId', j.invoiceId);",
+              "    pm.collectionVariables.set('invoiceAmount', j.invoiceAmount);",
+              "    pm.test('Invoice: ' + j.invoiceNumber + ' | Amount: Rs.' + j.invoiceAmount, () => pm.expect(j.invoiceAmount).to.be.above(0));",
+              "    pm.test('Status is FINALIZED', () => pm.expect(j.invoiceStatus).to.eql('FINALIZED'));",
+              "    pm.test('Payment status is UNPAID', () => pm.expect(j.paymentStatus).to.be.oneOf(['UNPAID', null, undefined]));",
+              "    console.log('Invoice created — ID:', j.invoiceId, '| Number:', j.invoiceNumber, '| Amount: Rs.', j.invoiceAmount);",
+              "} else {",
+              "    pm.test('ERROR creating invoice: ' + JSON.stringify(j), () => false);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{{invoiceBody}}" },
+        "url": { "raw": "{{baseUrl}}/invoices", "host": ["{{baseUrl}}"], "path": ["invoices"] }
+      }
+    },
+
+    {
+      "name": "💰 Step 7 — Record Full Payment",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const invoiceAmount = parseFloat(pm.collectionVariables.get('invoiceAmount') || 0);",
+              "const invoiceId     = parseInt(pm.collectionVariables.get('invoiceId'));",
+              "const customerId    = parseInt(pm.collectionVariables.get('customerId'));",
+              "const today         = new Date().toISOString().split('T')[0];",
+              "",
+              "if (!invoiceId || invoiceAmount <= 0) {",
+              "    console.error('ERROR: invoiceId or invoiceAmount not set — did Step 6 succeed?');",
+              "}",
+              "",
+              "// Randomly pick payment mode to add variety",
+              "const modes = ['CASH', 'CHEQUE', 'BANK_TRANSFER', 'UPI', 'NEFT', 'RTGS'];",
+              "const mode  = modes[Math.floor(Math.random() * modes.length)];",
+              "const ref   = 'REF-' + Date.now().toString().slice(-10);",
+              "",
+              "const body = {",
+              "    invoiceId:       invoiceId,",
+              "    customerId:      customerId,",
+              "    paymentDate:     today,",
+              "    amount:          invoiceAmount,    // Full payment — clears the invoice",
+              "    paymentMode:     mode,",
+              "    referenceNumber: ref,",
+              "    remarks:         'Full payment — auto test | ' + mode",
+              "};",
+              "",
+              "pm.collectionVariables.set('paymentBody', JSON.stringify(body));",
+              "console.log('--- Recording Payment | Invoice ID:', invoiceId, '| Amount: Rs.', invoiceAmount, '| Mode:', mode);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Payment recorded (201)', () => pm.expect(pm.response.code).to.eql(201));",
+              "const j = pm.response.json();",
+              "if (j.paymentId) {",
+              "    pm.collectionVariables.set('paymentId', j.paymentId);",
+              "    pm.test('Payment: ' + j.paymentNumber + ' | Rs.' + j.amount + ' via ' + j.paymentMode, () => pm.expect(j.paymentId).to.be.a('number'));",
+              "    const bal = parseFloat(j.balanceAmount || 0);",
+              "    pm.test('Invoice balance cleared: Rs.' + bal, () => pm.expect(bal).to.be.below(0.01));",
+              "    console.log('');",
+              "    console.log('╔════════════════════════════════════════╗');",
+              "    console.log('║         JOURNEY COMPLETE ✓             ║');",
+              "    console.log('╠════════════════════════════════════════╣');",
+              "    console.log('║ Customer  :', pm.collectionVariables.get('customerName'));",
+              "    console.log('║ Order ID  :', pm.collectionVariables.get('orderId'));",
+              "    console.log('║ Invoice ID:', j.invoiceId, '|', j.invoiceNumber);",
+              "    console.log('║ Amount    : Rs.', j.amount);",
+              "    console.log('║ Payment   :', j.paymentNumber, 'via', j.paymentMode);",
+              "    console.log('║ Balance   : Rs.', j.balanceAmount);",
+              "    console.log('╚════════════════════════════════════════╝');",
+              "} else {",
+              "    pm.test('ERROR recording payment: ' + JSON.stringify(j), () => false);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{{paymentBody}}" },
+        "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
+      }
+    },
+
+    {
+      "name": "📊 BONUS — View Customer Ledger Report",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Report loaded (200)', () => pm.expect(pm.response.code).to.eql(200));",
+              "const j = pm.response.json();",
+              "console.log('');",
+              "console.log('=== CUSTOMER LEDGER SUMMARY ===');",
+              "console.log('Customer     :', j.customerName);",
+              "console.log('Period       :', j.fromDate, 'to', j.toDate);",
+              "console.log('Invoiced     : Rs.', j.totalInvoiced);",
+              "console.log('Paid         : Rs.', j.totalPaid);",
+              "console.log('Outstanding  : Rs.', j.totalOutstanding);",
+              "console.log('Invoices     :', j.invoiceCount);",
+              "console.log('Payments     :', j.paymentCount);",
+              "pm.test('Total Invoiced > 0', () => pm.expect(j.totalInvoiced).to.be.above(0));",
+              "pm.test('Outstanding >= 0', () => pm.expect(j.totalOutstanding).to.be.at.least(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/reports/customer-statement?customerId={{customerId}}&from=2026-01-01&to=2026-12-31",
+          "host": ["{{baseUrl}}"],
+          "path": ["reports", "customer-statement"],
+          "query": [
+            { "key": "customerId", "value": "{{customerId}}" },
+            { "key": "from", "value": "2026-01-01" },
+            { "key": "to", "value": "2026-12-31" }
+          ]
+        }
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,24 @@
+# Docker ignore file
+.env
+node_modules/
+frontend/node_modules/
+.git/
+.gitignore
+.gitattributes
+*.md
+*.iml
+.idea/
+.vscode/
+.DS_Store
+deploy/setup-oracle-cloud.sh
+SalesApp.postman_collection.json
+
+# Exclude bulk build intermediates (keep the final JAR)
+target/classes/
+target/generated-sources/
+target/generated-test-sources/
+target/maven-archiver/
+target/maven-status/
+target/surefire-reports/
+target/test-classes/
+target/*.jar.original

@@ -1,0 +1,1362 @@
+{
+  "info": {
+    "_postman_id": "aaprintntags-complete-2026",
+    "name": "AA Print N Tags — Complete API",
+    "description": "## Complete API Collection — AA PRINT N TAGS\n\n### Setup\n1. Select an **Environment** (Localhost or UAT) from the top-right dropdown.\n2. Run **🔐 Auth → Login as Admin** or **Login as Tenant User** — the token is auto-saved.\n3. All create requests auto-capture IDs (`tenantId`, `customerId`, `orderId`, etc.) into collection variables for chained calls.\n\n### Environments\n- **Localhost** → `http://localhost:8080/api`\n- **UAT** → `http://140.245.210.80/api`\n\n### Default Credentials\n| Username | Password | Role |\n|---|---|---|\n| `admin` | `admin123` | ADMIN (all tenants) |\n| `aapnt_user` | `user123` | MANAGER (AA PRINT N TAGS) |\n\n### 🚀 Full Journey (Collection Runner)\nOpen the **🚀 Full Journey** folder in Collection Runner to simulate a complete PO → Invoice → Payment cycle in one click.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",          "value": "http://localhost:8080/api", "description": "Overridden by selected Environment" },
+    { "key": "token",            "value": "", "description": "Auto-set on login" },
+    { "key": "tenantId",         "value": "" },
+    { "key": "customerId",       "value": "" },
+    { "key": "productId",        "value": "" },
+    { "key": "orderId",          "value": "" },
+    { "key": "invoiceId",        "value": "" },
+    { "key": "invoiceAmount",    "value": "" },
+    { "key": "paymentId",        "value": "" },
+    { "key": "employeeId",       "value": "" },
+    { "key": "productionUnitId", "value": "" },
+    { "key": "userId",           "value": "" },
+    { "key": "username",         "value": "aapnt_user" },
+    { "key": "password",         "value": "user123" },
+    { "key": "product1Id",       "value": "" },
+    { "key": "product1Name",     "value": "" },
+    { "key": "product1Price",    "value": "100" },
+    { "key": "product2Id",       "value": "" },
+    { "key": "product2Name",     "value": "" },
+    { "key": "product2Price",    "value": "150" },
+    { "key": "product3Id",       "value": "" },
+    { "key": "product3Name",     "value": "" },
+    { "key": "product3Price",    "value": "200" },
+    { "key": "invoiceContext",   "value": "" },
+    { "key": "orderBody",        "value": "" },
+    { "key": "invoiceBody",      "value": "" },
+    { "key": "paymentBody",      "value": "" },
+    { "key": "_invoiceLines",    "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Login successful (200)', () => pm.expect(pm.response.code).to.eql(200));",
+                  "if (j.token) {",
+                  "    pm.collectionVariables.set('token', j.token);",
+                  "    pm.environment && pm.environment.set('token', j.token);",
+                  "    pm.test('Token saved ✓', () => pm.expect(j.token).to.be.a('string'));",
+                  "}",
+                  "if (j.tenantId) pm.collectionVariables.set('tenantId', j.tenantId);",
+                  "console.log('Logged in as:', j.username, '| Role:', j.role, '| Tenant:', j.tenantId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Tenant User (aapnt_user)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Login successful (200)', () => pm.expect(pm.response.code).to.eql(200));",
+                  "if (j.token) {",
+                  "    pm.collectionVariables.set('token', j.token);",
+                  "    pm.environment && pm.environment.set('token', j.token);",
+                  "    pm.test('Token saved ✓', () => pm.expect(j.token).to.be.a('string'));",
+                  "}",
+                  "if (j.tenantId) pm.collectionVariables.set('tenantId', j.tenantId);",
+                  "console.log('Logged in as:', j.username, '| Role:', j.role, '| Tenant:', j.tenantId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"username\": \"aapnt_user\",\n    \"password\": \"user123\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login (dynamic — uses username/password vars)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Login successful (200)', () => pm.expect(pm.response.code).to.eql(200));",
+                  "if (j.token) {",
+                  "    pm.collectionVariables.set('token', j.token);",
+                  "    pm.environment && pm.environment.set('token', j.token);",
+                  "}",
+                  "if (j.tenantId) pm.collectionVariables.set('tenantId', j.tenantId);",
+                  "console.log('Logged in as:', j.username, '| Tenant:', j.tenantId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current User (me)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🏢 Tenants (Admin only)",
+      "item": [
+        {
+          "name": "List Tenants",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tenants", "host": ["{{baseUrl}}"], "path": ["tenants"] }
+          }
+        },
+        {
+          "name": "Create Tenant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Tenant created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.tenantId) {",
+                  "    pm.collectionVariables.set('tenantId', j.tenantId);",
+                  "    pm.test('tenantId saved: ' + j.tenantId, () => pm.expect(j.tenantId).to.be.a('number'));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tenantCode\": \"TNT{{$randomInt}}\",\n    \"tenantName\": \"Test Company {{$randomInt}}\",\n    \"contactPerson\": \"{{$randomFullName}}\",\n    \"contactEmail\": \"tenant{{$randomInt}}@example.com\",\n    \"phone\": \"98765{{$randomInt}}\",\n    \"businessType\": \"Manufacturing\",\n    \"gstNumber\": \"33AABCT{{$randomInt}}H1Z1\",\n    \"panNumber\": \"ABCDE{{$randomInt}}F\",\n    \"bankName\": \"Indian Bank\",\n    \"bankAccountName\": \"Test Company\",\n    \"bankAccountNumber\": \"1234567890\",\n    \"bankIfsc\": \"IDIB000T052\",\n    \"address\": \"{{$randomStreetAddress}}\",\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\",\n    \"country\": \"India\",\n    \"registeredAddress\": \"Regd Office, 10 Mount Road, Chennai 600002\",\n    \"plan\": \"PRO\",\n    \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tenants", "host": ["{{baseUrl}}"], "path": ["tenants"] }
+          }
+        },
+        {
+          "name": "Get Tenant by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}"] }
+          }
+        },
+        {
+          "name": "Update Tenant",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tenantCode\": \"AAPNT\",\n    \"tenantName\": \"AA PRINT N TAGS\",\n    \"contactPerson\": \"Owner\",\n    \"contactEmail\": \"info@aaprintntags.com\",\n    \"phone\": \"9876543210\",\n    \"businessType\": \"Printing\",\n    \"gstNumber\": \"33AABCA1234B1Z5\",\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"country\": \"India\",\n    \"registeredAddress\": \"Updated Regd Office, Chennai\",\n    \"plan\": \"PRO\",\n    \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}"] }
+          }
+        },
+        {
+          "name": "Delete Tenant",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "👥 Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Get All Permissions",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/permissions", "host": ["{{baseUrl}}"], "path": ["users", "permissions"] }
+          }
+        },
+        {
+          "name": "Create User (Manager)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('User created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.userId) pm.collectionVariables.set('userId', j.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"manager_{{$randomInt}}\",\n    \"password\": \"Pass@123\",\n    \"fullName\": \"{{$randomFullName}}\",\n    \"email\": \"mgr{{$randomInt}}@example.com\",\n    \"role\": \"MANAGER\",\n    \"tenantId\": {{tenantId}},\n    \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Create User (Staff + Permissions)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('User created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.userId) pm.collectionVariables.set('userId', j.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"staff_{{$randomInt}}\",\n    \"password\": \"Pass@123\",\n    \"fullName\": \"{{$randomFullName}}\",\n    \"email\": \"staff{{$randomInt}}@example.com\",\n    \"role\": \"STAFF\",\n    \"tenantId\": {{tenantId}},\n    \"active\": true,\n    \"permissions\": [\n        \"dashboard:view\",\n        \"customers:view\", \"customers:edit\",\n        \"products:view\",  \"products:edit\",\n        \"orders:view\",    \"orders:edit\",\n        \"invoices:view\",\n        \"payments:view\",\n        \"reports:view\"\n    ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Create User (Viewer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('User created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.userId) pm.collectionVariables.set('userId', j.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"viewer_{{$randomInt}}\",\n    \"password\": \"Pass@123\",\n    \"fullName\": \"{{$randomFullName}}\",\n    \"email\": \"viewer{{$randomInt}}@example.com\",\n    \"role\": \"VIEWER\",\n    \"tenantId\": {{tenantId}},\n    \"active\": true,\n    \"permissions\": [\n        \"dashboard:view\",\n        \"customers:view\",\n        \"products:view\",\n        \"orders:view\",\n        \"invoices:view\",\n        \"reports:view\"\n    ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"staff_updated\",\n    \"fullName\": \"Updated Staff Name\",\n    \"email\": \"updated@example.com\",\n    \"role\": \"STAFF\",\n    \"tenantId\": {{tenantId}},\n    \"active\": true,\n    \"permissions\": [\n        \"dashboard:view\",\n        \"customers:view\", \"customers:edit\",\n        \"products:view\"\n    ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🏭 Production Units",
+      "item": [
+        {
+          "name": "List Production Units",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/production-units", "host": ["{{baseUrl}}"], "path": ["production-units"] }
+          }
+        },
+        {
+          "name": "Create Production Unit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Production Unit created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.productionUnitId) pm.collectionVariables.set('productionUnitId', j.productionUnitId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tenantId\": {{tenantId}},\n    \"unitName\": \"Unit {{$randomInt}} - Main Plant\",\n    \"unitCode\": \"PU{{$randomInt}}\",\n    \"address\": \"{{$randomStreetAddress}}\",\n    \"city\": \"Tirupur\",\n    \"state\": \"Tamil Nadu\",\n    \"phone\": \"98765{{$randomInt}}\",\n    \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/production-units", "host": ["{{baseUrl}}"], "path": ["production-units"] }
+          }
+        },
+        {
+          "name": "Get Production Unit",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/production-units/{{productionUnitId}}", "host": ["{{baseUrl}}"], "path": ["production-units", "{{productionUnitId}}"] }
+          }
+        },
+        {
+          "name": "Update Production Unit",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tenantId\": {{tenantId}},\n    \"unitName\": \"Updated Unit\",\n    \"unitCode\": \"PU-UPD\",\n    \"address\": \"Updated Address, Industrial Area\",\n    \"city\": \"Coimbatore\",\n    \"state\": \"Tamil Nadu\",\n    \"phone\": \"9876500000\",\n    \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/production-units/{{productionUnitId}}", "host": ["{{baseUrl}}"], "path": ["production-units", "{{productionUnitId}}"] }
+          }
+        },
+        {
+          "name": "Delete Production Unit",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/production-units/{{productionUnitId}}", "host": ["{{baseUrl}}"], "path": ["production-units", "{{productionUnitId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "👤 Customers",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/customers?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["customers"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Search Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/customers/search?q=lakshmi",
+              "host": ["{{baseUrl}}"], "path": ["customers", "search"],
+              "query": [{ "key": "q", "value": "lakshmi" }]
+            }
+          }
+        },
+        {
+          "name": "Create Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Customer created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.customerId) pm.collectionVariables.set('customerId', j.customerId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"customerName\": \"Test Customer {{$randomInt}}\",\n    \"phone\": \"99887{{$randomInt}}\",\n    \"email\": \"cust{{$randomInt}}@example.com\",\n    \"gstNumber\": \"33AABCT{{$randomInt}}H1Z1\",\n    \"currentAddress\": \"{{$randomStreetAddress}}, Chennai\",\n    \"billingAddress\": \"{{$randomStreetAddress}}, Chennai 600001\",\n    \"deliveryAddress\": \"Warehouse, Industrial Estate, Chennai\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/customers", "host": ["{{baseUrl}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customers/{{customerId}}", "host": ["{{baseUrl}}"], "path": ["customers", "{{customerId}}"] }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"customerName\": \"Updated Customer {{$randomInt}}\",\n    \"phone\": \"9988776655\",\n    \"email\": \"updated{{$randomInt}}@example.com\",\n    \"gstNumber\": \"33AADFS1234H1Z2\",\n    \"currentAddress\": \"Updated Current Address, Chennai\",\n    \"billingAddress\": \"Updated Billing Address\",\n    \"deliveryAddress\": \"Updated Delivery Address\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/customers/{{customerId}}", "host": ["{{baseUrl}}"], "path": ["customers", "{{customerId}}"] }
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/customers/{{customerId}}", "host": ["{{baseUrl}}"], "path": ["customers", "{{customerId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📦 Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["products"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Filter Products by HSN",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?page=0&size=20&hsn=4821",
+              "host": ["{{baseUrl}}"], "path": ["products"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }, { "key": "hsn", "value": "4821" }]
+            }
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/search?q=label",
+              "host": ["{{baseUrl}}"], "path": ["products", "search"],
+              "query": [{ "key": "q", "value": "label" }]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Product created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.productId) pm.collectionVariables.set('productId', j.productId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productName\": \"Test Label {{$randomInt}}\",\n    \"productSize\": \"50mm x 25mm\",\n    \"productPrice\": \"3.50\",\n    \"hsnCode\": \"4821\",\n    \"additionalWorks\": \"Thermal printing, Lamination\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productName\": \"Updated Label {{$randomInt}}\",\n    \"productSize\": \"100mm x 50mm\",\n    \"productPrice\": \"5.50\",\n    \"hsnCode\": \"4821\",\n    \"additionalWorks\": \"Updated works\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "👨‍💼 Employees",
+      "item": [
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/employees?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["employees"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Create Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Employee created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.employeeId) pm.collectionVariables.set('employeeId', j.employeeId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"{{$randomFirstName}}\",\n    \"lastName\": \"{{$randomLastName}}\",\n    \"email\": \"emp{{$randomInt}}@example.com\",\n    \"phone\": \"98765{{$randomInt}}\",\n    \"designation\": \"Operator\",\n    \"department\": \"Production\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/employees", "host": ["{{baseUrl}}"], "path": ["employees"] }
+          }
+        },
+        {
+          "name": "Get Employee by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/employees/{{employeeId}}", "host": ["{{baseUrl}}"], "path": ["employees", "{{employeeId}}"] }
+          }
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"Updated\",\n    \"lastName\": \"Employee\",\n    \"email\": \"emp_updated@example.com\",\n    \"phone\": \"9876500001\",\n    \"designation\": \"Senior Operator\",\n    \"department\": \"Production\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/employees/{{employeeId}}", "host": ["{{baseUrl}}"], "path": ["employees", "{{employeeId}}"] }
+          }
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/employees/{{employeeId}}", "host": ["{{baseUrl}}"], "path": ["employees", "{{employeeId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🛒 Purchase Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["orders"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "List Orders (filtered by status)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders?page=0&size=20&status=PENDING",
+              "host": ["{{baseUrl}}"], "path": ["orders"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }, { "key": "status", "value": "PENDING" }]
+            }
+          }
+        },
+        {
+          "name": "List Orders (filtered by customer)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders?page=0&size=20&customerId={{customerId}}",
+              "host": ["{{baseUrl}}"], "path": ["orders"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }, { "key": "customerId", "value": "{{customerId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Create Purchase Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('PO created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.orderId) {",
+                  "    pm.collectionVariables.set('orderId', j.orderId);",
+                  "    pm.test('PO ' + j.poNumber + ' | ID: ' + j.orderId, () => true);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"poNumber\": \"PO-2026-{{$randomInt}}\",\n    \"poDate\": \"2026-04-14\",\n    \"customerId\": {{customerId}},\n    \"orderStatus\": \"PENDING\",\n    \"shippingAddress\": \"{{$randomStreetAddress}}, Chennai\",\n    \"cgst\": 9,\n    \"sgst\": 9,\n    \"igst\": 0,\n    \"deliveryCharges\": 250,\n    \"orderProductDTOList\": [\n        {\n            \"productId\": {{productId}},\n            \"quantity\": 500,\n            \"price\": 2.50,\n            \"size\": \"50mm x 25mm\",\n            \"description\": \"Barcode labels for packaging\"\n        }\n    ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/orders/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["orders", "{{orderId}}"] }
+          }
+        },
+        {
+          "name": "Update Order",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": {{orderId}},\n    \"poNumber\": \"PO-2026-UPD\",\n    \"poDate\": \"2026-04-14\",\n    \"customerId\": {{customerId}},\n    \"orderStatus\": \"PROCESSING\",\n    \"shippingAddress\": \"Updated shipping address, Chennai\",\n    \"cgst\": 9,\n    \"sgst\": 9,\n    \"igst\": 0,\n    \"deliveryCharges\": 300,\n    \"orderProductDTOList\": [\n        {\n            \"productId\": {{productId}},\n            \"quantity\": 1000,\n            \"price\": 2.50,\n            \"size\": \"50mm x 25mm\",\n            \"description\": \"Qty updated to 1000\"\n        }\n    ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["orders", "{{orderId}}"] }
+          }
+        },
+        {
+          "name": "Delete Order",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/orders/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["orders", "{{orderId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🧾 Invoices",
+      "item": [
+        {
+          "name": "List Invoices",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/invoices?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["invoices"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "List Invoices (DRAFT / UNPAID)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/invoices?page=0&size=20&status=DRAFT&paymentStatus=UNPAID",
+              "host": ["{{baseUrl}}"], "path": ["invoices"],
+              "query": [
+                { "key": "page", "value": "0" }, { "key": "size", "value": "20" },
+                { "key": "status", "value": "DRAFT" }, { "key": "paymentStatus", "value": "UNPAID" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List FSC Invoices",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/invoices?page=0&size=20&fsc=true",
+              "host": ["{{baseUrl}}"], "path": ["invoices"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }, { "key": "fsc", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice Context (from Order)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Context loaded (200)', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('invoiceContext', JSON.stringify(j));",
+                  "const lines = j.invoiceProductDTOList || [];",
+                  "pm.test('Context has ' + lines.length + ' line(s)', () => pm.expect(lines.length).to.be.above(0));",
+                  "lines.forEach(l => console.log('  Line:', l.productName, '| orderProductId:', l.orderProductId, '| Qty:', l.orderedQuantity, '| Price:', l.price));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/invoices/context/order/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["invoices", "context", "order", "{{orderId}}"] }
+          }
+        },
+        {
+          "name": "Create Invoice (manual body)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Invoice created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.invoiceId) {",
+                  "    pm.collectionVariables.set('invoiceId', j.invoiceId);",
+                  "    pm.collectionVariables.set('invoiceAmount', j.invoiceAmount);",
+                  "    pm.test('Invoice ' + j.invoiceNumber + ' | Amount: Rs.' + j.invoiceAmount, () => true);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": {{orderId}},\n    \"invoiceDate\": \"2026-04-14\",\n    \"shipToAddress\": \"Shipping Address, Chennai 600001\",\n    \"invoiceStatus\": \"FINALIZED\",\n    \"remarks\": \"Test invoice via Postman\",\n    \"roundOff\": true,\n    \"fscInvoice\": false,\n    \"cgst\": 9,\n    \"sgst\": 9,\n    \"igst\": 0,\n    \"deliveryCharges\": 0,\n    \"invoiceProductDTOList\": [\n        {\n            \"orderProductId\": 1,\n            \"productId\": {{productId}},\n            \"quantity\": 500,\n            \"price\": 2.50,\n            \"size\": \"50mm x 25mm\",\n            \"description\": \"Barcode labels\",\n            \"hsnCode\": \"4821\",\n            \"selected\": true\n        }\n    ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/invoices", "host": ["{{baseUrl}}"], "path": ["invoices"] }
+          }
+        },
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/invoices/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["invoices", "{{invoiceId}}"] }
+          }
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": {{orderId}},\n    \"invoiceDate\": \"2026-04-14\",\n    \"shipToAddress\": \"Updated Ship Address\",\n    \"invoiceStatus\": \"FINALIZED\",\n    \"remarks\": \"Updated via Postman\",\n    \"roundOff\": true,\n    \"fscInvoice\": false,\n    \"invoiceProductDTOList\": [\n        {\n            \"orderProductId\": 1,\n            \"productId\": {{productId}},\n            \"quantity\": 500,\n            \"price\": 2.50,\n            \"size\": \"50mm x 25mm\",\n            \"description\": \"Barcode labels\",\n            \"hsnCode\": \"4821\",\n            \"selected\": true\n        }\n    ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/invoices/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["invoices", "{{invoiceId}}"] }
+          }
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/invoices/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["invoices", "{{invoiceId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "💰 Payments",
+      "item": [
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/payments?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["payments"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Payments by Invoice",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/payments/invoice/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["payments", "invoice", "{{invoiceId}}"] }
+          }
+        },
+        {
+          "name": "Invoice Balance",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/payments/invoice/{{invoiceId}}/balance", "host": ["{{baseUrl}}"], "path": ["payments", "invoice", "{{invoiceId}}", "balance"] }
+          }
+        },
+        {
+          "name": "Payments by Customer",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/payments/customer/{{customerId}}?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["payments", "customer", "{{customerId}}"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Record Payment (UPI)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Payment recorded (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"invoiceId\": {{invoiceId}},\n    \"paymentDate\": \"2026-04-14\",\n    \"amount\": 500.00,\n    \"paymentMode\": \"UPI\",\n    \"referenceNumber\": \"UTR{{$randomInt}}{{$randomInt}}\",\n    \"remarks\": \"Partial payment via UPI\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
+          }
+        },
+        {
+          "name": "Record Payment (Cash)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Payment recorded (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"invoiceId\": {{invoiceId}},\n    \"paymentDate\": \"2026-04-14\",\n    \"amount\": 1000.00,\n    \"paymentMode\": \"CASH\",\n    \"referenceNumber\": \"\",\n    \"remarks\": \"Cash payment received at counter\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
+          }
+        },
+        {
+          "name": "Record Payment (Bank Transfer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Payment recorded (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"invoiceId\": {{invoiceId}},\n    \"paymentDate\": \"2026-04-14\",\n    \"amount\": 2500.00,\n    \"paymentMode\": \"BANK_TRANSFER\",\n    \"referenceNumber\": \"NEFT{{$randomInt}}\",\n    \"remarks\": \"NEFT transfer from SBI savings\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
+          }
+        },
+        {
+          "name": "Delete Payment",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/payments/{{paymentId}}", "host": ["{{baseUrl}}"], "path": ["payments", "{{paymentId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📊 Reports",
+      "item": [
+        {
+          "name": "Customer Statement — All",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/customer-statement?from=2026-01-01&to=2026-12-31",
+              "host": ["{{baseUrl}}"], "path": ["reports", "customer-statement"],
+              "query": [{ "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }]
+            }
+          }
+        },
+        {
+          "name": "Customer Statement — Specific Customer",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/customer-statement?customerId={{customerId}}&from=2026-01-01&to=2026-12-31",
+              "host": ["{{baseUrl}}"], "path": ["reports", "customer-statement"],
+              "query": [
+                { "key": "customerId", "value": "{{customerId}}" },
+                { "key": "from", "value": "2026-01-01" },
+                { "key": "to", "value": "2026-12-31" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📈 Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/dashboard", "host": ["{{baseUrl}}"], "path": ["dashboard"] }
+          }
+        },
+        {
+          "name": "Dashboard Analytics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/dashboard/analytics", "host": ["{{baseUrl}}"], "path": ["dashboard", "analytics"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🚀 Full Journey (Collection Runner)",
+      "description": "Run all 8 steps via **Collection Runner** to simulate a complete PO → Invoice → Payment cycle.\n\nSet Iterations (e.g. 5) to create 5 complete journeys back-to-back.\n\n**Pre-requisites:** Login first (Step 1 does it automatically).",
+      "item": [
+        {
+          "name": "Step 1 — Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('Login successful (200)', () => pm.expect(pm.response.code).to.eql(200));",
+                  "if (j.token) {",
+                  "    pm.collectionVariables.set('token', j.token);",
+                  "    pm.environment && pm.environment.set('token', j.token);",
+                  "    pm.test('Token saved ✓', () => pm.expect(j.token).to.be.a('string'));",
+                  "}",
+                  "if (j.tenantId) pm.collectionVariables.set('tenantId', j.tenantId);",
+                  "console.log('Logged in as:', j.username, '| Tenant:', j.tenantId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Step 2 — Pick Customer (random)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "const list = Array.isArray(j) ? j : (j.content || []);",
+                  "const hardcoded = pm.collectionVariables.get('customerId');",
+                  "if (hardcoded && hardcoded !== '') {",
+                  "    pm.test('Using hardcoded customerId: ' + hardcoded, () => true);",
+                  "    return;",
+                  "}",
+                  "if (list.length === 0) {",
+                  "    pm.test('ERROR: No customers found', () => false);",
+                  "    return;",
+                  "}",
+                  "const pick = list[Math.floor(Math.random() * list.length)];",
+                  "pm.collectionVariables.set('customerId', pick.customerId);",
+                  "pm.collectionVariables.set('customerName', pick.customerName);",
+                  "pm.test('Customer: ' + pick.customerName + ' (ID=' + pick.customerId + ')', () => pm.expect(pick.customerId).to.be.a('number'));",
+                  "console.log('Customer:', pick.customerName, '| ID:', pick.customerId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/customers/search?q=",
+              "host": ["{{baseUrl}}"], "path": ["customers", "search"],
+              "query": [{ "key": "q", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Step 3 — Get Products (pick 3 random)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "const list = j.content || (Array.isArray(j) ? j : []);",
+                  "if (!list || list.length === 0) { pm.test('ERROR: No products found', () => false); return; }",
+                  "const shuffled = [...list].sort(() => Math.random() - 0.5);",
+                  "const count = Math.min(3, shuffled.length);",
+                  "for (let i = 0; i < count; i++) {",
+                  "    const p = shuffled[i];",
+                  "    pm.collectionVariables.set('product' + (i+1) + 'Id', p.productId);",
+                  "    pm.collectionVariables.set('product' + (i+1) + 'Name', p.productName || 'Product ' + (i+1));",
+                  "    const price = parseFloat(p.productPrice || 100);",
+                  "    pm.collectionVariables.set('product' + (i+1) + 'Price', isNaN(price) ? 100 : price);",
+                  "    pm.collectionVariables.set('product' + (i+1) + 'Hsn', p.hsnCode || '');",
+                  "}",
+                  "for (let i = count; i < 3; i++) {",
+                  "    pm.collectionVariables.set('product' + (i+1) + 'Id',    pm.collectionVariables.get('product' + count + 'Id'));",
+                  "    pm.collectionVariables.set('product' + (i+1) + 'Name',  pm.collectionVariables.get('product' + count + 'Name'));",
+                  "    pm.collectionVariables.set('product' + (i+1) + 'Price', pm.collectionVariables.get('product' + count + 'Price'));",
+                  "}",
+                  "const names = [];",
+                  "for (let i = 1; i <= count; i++) names.push(pm.collectionVariables.get('product' + i + 'Name'));",
+                  "pm.test('Products: ' + names.join(', '), () => pm.expect(count).to.be.above(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?page=0&size=100",
+              "host": ["{{baseUrl}}"], "path": ["products"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "100" }]
+            }
+          }
+        },
+        {
+          "name": "Step 4 — Create Purchase Order (random qty)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;",
+                  "const today = new Date().toISOString().split('T')[0];",
+                  "const poNum = 'PO-' + Date.now().toString().slice(-8);",
+                  "const customerId = parseInt(pm.collectionVariables.get('customerId') || 1);",
+                  "const products = [];",
+                  "for (let i = 1; i <= 3; i++) {",
+                  "    const pid = pm.collectionVariables.get('product' + i + 'Id');",
+                  "    if (!pid) continue;",
+                  "    const price = parseFloat(pm.collectionVariables.get('product' + i + 'Price') || 100);",
+                  "    products.push({",
+                  "        productId: parseInt(pid),",
+                  "        productName: pm.collectionVariables.get('product' + i + 'Name') || 'Product ' + i,",
+                  "        quantity: rnd(5, 50),",
+                  "        price: isNaN(price) ? 100 : price,",
+                  "        size: ['A4', 'A3', '10x15cm', 'Custom', '50x25mm'][rnd(0, 4)],",
+                  "        description: 'Auto-test item ' + i,",
+                  "        additionalWorks: ''",
+                  "    });",
+                  "}",
+                  "const seen = new Set();",
+                  "const unique = products.filter(p => { if (seen.has(p.productId)) return false; seen.add(p.productId); return true; });",
+                  "const subtotal = unique.reduce((s, p) => s + p.quantity * p.price, 0);",
+                  "const cgst = parseFloat((subtotal * 0.09).toFixed(2));",
+                  "const sgst = parseFloat((subtotal * 0.09).toFixed(2));",
+                  "const body = { poNumber: poNum, poDate: today, customerId, orderStatus: 'IN_PROGRESS', cgst, sgst, igst: 0, deliveryCharges: 0, shippingAddress: '', orderProductDTOList: unique };",
+                  "pm.collectionVariables.set('orderBody', JSON.stringify(body));",
+                  "console.log('PO:', poNum, '| Customer:', customerId, '| Lines:', unique.length, '| Subtotal: Rs.', subtotal.toFixed(2));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "pm.test('PO created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "if (j.orderId) {",
+                  "    pm.collectionVariables.set('orderId', j.orderId);",
+                  "    pm.test('PO: ' + j.poNumber + ' | ID: ' + j.orderId + ' | Total: Rs.' + j.totalAmount, () => true);",
+                  "    console.log('Order created — ID:', j.orderId, '| PO:', j.poNumber, '| Total: Rs.', j.totalAmount);",
+                  "} else { pm.test('ERROR: ' + JSON.stringify(j), () => false); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{{orderBody}}" },
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          }
+        },
+        {
+          "name": "Step 5 — Get Invoice Context from Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invoice context loaded (200)', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('invoiceContext', JSON.stringify(j));",
+                  "const products = j.invoiceProductDTOList || [];",
+                  "pm.test('Context has ' + products.length + ' product line(s)', () => pm.expect(products.length).to.be.above(0));",
+                  "products.forEach(p => console.log('  Line:', p.productName, '| orderProductId:', p.orderProductId, '| Qty:', p.orderedQuantity, '| Price:', p.price, '| HSN:', p.hsnCode));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/invoices/context/order/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["invoices", "context", "order", "{{orderId}}"] }
+          }
+        },
+        {
+          "name": "Step 6 — Create Invoice (FINALIZED, full qty)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ctx = JSON.parse(pm.collectionVariables.get('invoiceContext') || '{}');",
+                  "const orderId = parseInt(pm.collectionVariables.get('orderId'));",
+                  "const customerId = parseInt(pm.collectionVariables.get('customerId'));",
+                  "const today = new Date().toISOString().split('T')[0];",
+                  "const products = (ctx.invoiceProductDTOList || []).map(p => ({",
+                  "    orderProductId: p.orderProductId,",
+                  "    productId: p.productId,",
+                  "    quantity: p.orderedQuantity,",
+                  "    price: p.price,",
+                  "    size: p.size || '',",
+                  "    description: p.description || '',",
+                  "    hsnCode: p.hsnCode || '',",
+                  "    selected: true",
+                  "}));",
+                  "if (products.length === 0) console.error('ERROR: No products in invoice context');",
+                  "const subtotal = products.reduce((s, p) => s + ((p.quantity || 0) * (p.price || 0)), 0);",
+                  "const cgst = parseFloat((subtotal * 0.09).toFixed(2));",
+                  "const sgst = parseFloat((subtotal * 0.09).toFixed(2));",
+                  "const body = { orderId, customerId, invoiceDate: today, invoiceStatus: 'FINALIZED', invoiceProductDTOList: products, cgst, sgst, igst: 0, deliveryCharges: 0, roundOff: false, roundOffAmount: 0, fscInvoice: false, remarks: 'Auto-generated invoice' };",
+                  "pm.collectionVariables.set('invoiceBody', JSON.stringify(body));",
+                  "console.log('Invoice for Order:', orderId, '| Lines:', products.length, '| Total: Rs.', (subtotal + cgst + sgst).toFixed(2));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invoice created (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "const j = pm.response.json();",
+                  "if (j.invoiceId) {",
+                  "    pm.collectionVariables.set('invoiceId', j.invoiceId);",
+                  "    pm.collectionVariables.set('invoiceAmount', j.invoiceAmount);",
+                  "    pm.test('Invoice: ' + j.invoiceNumber + ' | Rs.' + j.invoiceAmount, () => pm.expect(j.invoiceAmount).to.be.above(0));",
+                  "    pm.test('Status: FINALIZED', () => pm.expect(j.invoiceStatus).to.eql('FINALIZED'));",
+                  "    console.log('Invoice — ID:', j.invoiceId, '| Number:', j.invoiceNumber, '| Amount: Rs.', j.invoiceAmount);",
+                  "} else { pm.test('ERROR: ' + JSON.stringify(j), () => false); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{{invoiceBody}}" },
+            "url": { "raw": "{{baseUrl}}/invoices", "host": ["{{baseUrl}}"], "path": ["invoices"] }
+          }
+        },
+        {
+          "name": "Step 7 — Record Full Payment (random mode)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const invoiceAmount = parseFloat(pm.collectionVariables.get('invoiceAmount') || 0);",
+                  "const invoiceId = parseInt(pm.collectionVariables.get('invoiceId'));",
+                  "const customerId = parseInt(pm.collectionVariables.get('customerId'));",
+                  "const today = new Date().toISOString().split('T')[0];",
+                  "if (!invoiceId || invoiceAmount <= 0) console.error('ERROR: invoiceId or invoiceAmount missing');",
+                  "const modes = ['CASH', 'CHEQUE', 'BANK_TRANSFER', 'UPI', 'NEFT', 'RTGS'];",
+                  "const mode = modes[Math.floor(Math.random() * modes.length)];",
+                  "const ref = 'REF-' + Date.now().toString().slice(-10);",
+                  "const body = { invoiceId, customerId, paymentDate: today, amount: invoiceAmount, paymentMode: mode, referenceNumber: ref, remarks: 'Full payment — auto | ' + mode };",
+                  "pm.collectionVariables.set('paymentBody', JSON.stringify(body));",
+                  "console.log('Payment | Invoice:', invoiceId, '| Rs.', invoiceAmount, '| Mode:', mode);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Payment recorded (201)', () => pm.expect(pm.response.code).to.eql(201));",
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) {",
+                  "    pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "    const bal = parseFloat(j.balanceAmount || 0);",
+                  "    pm.test('Balance cleared: Rs.' + bal, () => pm.expect(bal).to.be.below(0.01));",
+                  "    console.log('');",
+                  "    console.log('╔════════════════════════════════════════╗');",
+                  "    console.log('║         JOURNEY COMPLETE ✓             ║');",
+                  "    console.log('╠════════════════════════════════════════╣');",
+                  "    console.log('║ Customer  :', pm.collectionVariables.get('customerName'));",
+                  "    console.log('║ Order ID  :', pm.collectionVariables.get('orderId'));",
+                  "    console.log('║ Invoice   :', j.invoiceId, '|', j.invoiceNumber || '');",
+                  "    console.log('║ Amount    : Rs.', j.amount);",
+                  "    console.log('║ Payment   :', j.paymentNumber || j.paymentId, 'via', j.paymentMode);",
+                  "    console.log('║ Balance   : Rs.', j.balanceAmount);",
+                  "    console.log('╚════════════════════════════════════════╝');",
+                  "} else { pm.test('ERROR: ' + JSON.stringify(j), () => false); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{{paymentBody}}" },
+            "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
+          }
+        },
+        {
+          "name": "Step 8 — Customer Ledger Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Report loaded (200)', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "console.log('');",
+                  "console.log('=== CUSTOMER LEDGER ===');",
+                  "console.log('Customer    :', j.customerName);",
+                  "console.log('Period      :', j.fromDate, 'to', j.toDate);",
+                  "console.log('Invoiced    : Rs.', j.totalInvoiced);",
+                  "console.log('Paid        : Rs.', j.totalPaid);",
+                  "console.log('Outstanding : Rs.', j.totalOutstanding);",
+                  "pm.test('Invoiced > 0', () => pm.expect(j.totalInvoiced).to.be.above(0));",
+                  "pm.test('Outstanding >= 0', () => pm.expect(j.totalOutstanding).to.be.at.least(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/customer-statement?customerId={{customerId}}&from=2026-01-01&to=2026-12-31",
+              "host": ["{{baseUrl}}"], "path": ["reports", "customer-statement"],
+              "query": [
+                { "key": "customerId", "value": "{{customerId}}" },
+                { "key": "from", "value": "2026-01-01" },
+                { "key": "to", "value": "2026-12-31" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+
+  ]
+}
+
