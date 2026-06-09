@@ -1,0 +1,66 @@
+# ============================================================
+#  Local development stack — mirrors production
+#  Run:   docker compose -f docker-compose.local.yml up -d --build
+#  App:   http://localhost:8088
+#  Logs:  http://localhost:8088/logs/   (admin / admin)
+#  Stop:  docker compose -f docker-compose.local.yml down
+#  (data persists in the mysql_data_local volume)
+# ============================================================
+services:
+  db:
+    image: mysql:8.0
+    container_name: aaprintntags-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: StrongP@ss2026!
+      MYSQL_DATABASE: aaprintntags
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: AppUser@2026!
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data_local:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-pStrongP@ss2026!"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aaprintntags-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8088:80"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://aaprintntags-db:3306/aaprintntags?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8"
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: AppUser@2026!
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: prod
+      APP_JWT_SECRET: "4a6f686e446f6553616c65734170704a57545365637265744b65793230323621"
+      APP_JWT_EXPIRATION_MS: "86400000"
+    volumes:
+      - ./deploy/local/.htpasswd:/etc/nginx/.htpasswd:ro
+
+  # Browser log viewer — same as production, reachable at /logs/
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: aaprintntags-logs
+    restart: unless-stopped
+    environment:
+      DOZZLE_BASE: /logs
+      DOZZLE_NO_ANALYTICS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  mysql_data_local:
+
