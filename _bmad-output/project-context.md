@@ -1,8 +1,8 @@
 ---
 project_name: 'aaprintntags'
 user_name: 'Subramanianganesan'
-date: '2026-05-24'
-sections_completed: ['technology_stack', 'language_rules', 'framework_rules', 'testing_rules', 'code_quality', 'workflow_rules', 'critical_rules']
+date: '2026-06-10'
+sections_completed: ['technology_stack', 'language_rules', 'framework_rules', 'testing_rules', 'code_quality', 'workflow_rules', 'critical_rules', 'cicd_deployment']
 existing_patterns_found: 9
 ---
 
@@ -38,9 +38,16 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **@vitejs/plugin-react 5.1.4**
 
 ### Deployment
-- **Docker** (multi-stage: JDK17 build → Node 20 build → JRE17 + Nginx)
-- **Nginx** — serves frontend static files, reverse proxies `/api` to Spring Boot
-- Port 80 (Nginx) proxies to port 8080 (Spring Boot)
+- **CI/CD**: GitHub Actions (`.github/workflows/deploy.yml`) — builds on every push to `main`
+- **Registry**: GitHub Container Registry (GHCR) — `ghcr.io/subbu64774/aaprintntags`
+- **Host**: Oracle Cloud Always-Free ARM VM (Oracle Linux 9), `140.245.210.80`
+- **Runtime**: **Podman** containers (NOT Docker daemon) — `sudo podman` on the VM
+- **Docker image**: multi-stage `Dockerfile` (JDK17 build → Node 20 build → JRE17 + Nginx)
+- **Nginx** — serves frontend static files, reverse proxies `/api` + `/logos` to Spring Boot
+- Port 80 (HTTP, redirects) + 443 (HTTPS) → proxy to port 8080 (Spring Boot) inside the container
+- **HTTPS**: Let's Encrypt cert for `140-245-210-80.sslip.io` (sslip.io maps the hostname to the IP; no domain purchase). Public URL: **https://140-245-210-80.sslip.io**
+- **Database**: separate `aaprintntags-db` Podman container (MySQL 8) with persistent volume `mysql_data` — never recreated on deploy
+
 
 ---
 
@@ -167,9 +174,17 @@ frontend/src/pages/{module}/
 4. Access app at `http://localhost:5173`
 
 ### Building for Production
-- `./mvnw package -DskipTests` → produces `target/aaprintntags-0.0.1-SNAPSHOT.jar`
-- `cd frontend && npm run build` → produces `frontend/dist/`
-- Docker: `docker build .` (multi-stage handles everything)
+- Local build (optional): `./mvnw package -DskipTests` → `target/aaprintntags-0.0.1-SNAPSHOT.jar`; `cd frontend && npm run build` → `frontend/dist/`
+- Production builds happen in **CI** via the multi-stage `Dockerfile` — you normally never build manually for prod
+
+### CI/CD & Production Deployment Rules (IMPORTANT)
+- **Deploy = `git push origin main`.** GitHub Actions builds the image, pushes to GHCR, then SSHes to the Oracle VM and runs `deploy/server-deploy.sh`.
+- **NEVER** SSH in and hand-edit containers as the source of truth — all prod changes go through the repo + pipeline (infra-as-code).
+- The deploy **only replaces the `aaprintntags-app` container**. The `aaprintntags-db` MySQL container + `mysql_data` volume are NEVER touched on deploy → data is always preserved.
+- Health check + **automatic rollback** to the previous image if the new release is unhealthy (`/api/health` must return 200).
+- Secrets live in **GitHub Actions secrets** (`ORACLE_SSH_*`, `DB_*`, `JWT_SECRET`) — never commit secrets. `.env`, `*.key`, `*.pem` are gitignored.
+- TLS: `deploy/start.sh` auto-enables HTTPS when a cert exists for `$CERT_DOMAIN`; `deploy/server-deploy.sh` auto-publishes 443 + mounts the cert. Cert is provisioned once via `deploy/setup-https.sh` and auto-renews via cron.
+- Key deploy files: `.github/workflows/deploy.yml`, `deploy/server-deploy.sh`, `deploy/nginx.conf`, `deploy/nginx-https.conf`, `deploy/start.sh`, `deploy/setup-https.sh`. Setup guide: `docs/CICD_SETUP.md`.
 
 ### API URL Pattern
 - All REST endpoints: `/api/{resource}` (plural)
