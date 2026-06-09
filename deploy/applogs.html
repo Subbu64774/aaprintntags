@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SalesApp — Application Logs</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #1e1e1e; color: #d4d4d4; font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    #bar { position: sticky; top: 0; z-index: 5; background: #252526; padding: 8px 12px; border-bottom: 1px solid #333;
+           display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    #bar strong { color: #fff; }
+    #bar input[type=text] { background: #3c3c3c; color: #fff; border: 1px solid #555; padding: 4px 8px; border-radius: 4px; min-width: 180px; }
+    #bar label { user-select: none; }
+    #status { color: #858585; margin-left: auto; }
+    #log { padding: 10px 12px 40px; white-space: pre-wrap; word-break: break-word; }
+    .line.err  { color: #f48771; }
+    .line.warn { color: #dcdcaa; }
+    .line.info { color: #9cdcfe; }
+    .line.debug{ color: #808080; }
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <strong>SalesApp · Application Logs</strong>
+    <label><input type="checkbox" id="follow" checked /> Auto-scroll</label>
+    <label><input type="checkbox" id="auto" checked /> Auto-refresh (3s)</label>
+    <input type="text" id="filter" placeholder="filter text…" />
+    <span id="status">loading…</span>
+  </div>
+  <div id="log"></div>
+  <script>
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+    const followEl = document.getElementById('follow');
+    const autoEl = document.getElementById('auto');
+    const filterEl = document.getElementById('filter');
+
+    function classify(line) {
+      if (/\b(ERROR|SEVERE|Exception|FATAL)\b/.test(line)) return 'err';
+      if (/\bWARN(ING)?\b/.test(line)) return 'warn';
+      if (/\bINFO\b/.test(line)) return 'info';
+      if (/\bDEBUG|TRACE\b/.test(line)) return 'debug';
+      return '';
+    }
+
+    async function tick() {
+      try {
+        const res = await fetch('raw?_=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        let text = await res.text();
+        const f = filterEl.value.trim().toLowerCase();
+        let lines = text.split('\n');
+        if (f) lines = lines.filter(l => l.toLowerCase().includes(f));
+        lines = lines.slice(-1500);
+        logEl.innerHTML = lines
+          .map(l => '<div class="line ' + classify(l) + '">' +
+            l.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>')
+          .join('');
+        statusEl.textContent = lines.length + ' lines · updated ' + new Date().toLocaleTimeString();
+        if (followEl.checked) window.scrollTo(0, document.body.scrollHeight);
+      } catch (e) {
+        statusEl.textContent = 'error: ' + e.message;
+      }
+    }
+
+    tick();
+    setInterval(() => { if (autoEl.checked) tick(); }, 3000);
+    filterEl.addEventListener('input', tick);
+  </script>
+</body>
+</html>
+

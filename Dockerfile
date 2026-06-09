@@ -53,6 +53,7 @@ COPY --from=frontend-build /app/dist /usr/share/nginx/html
 # Copy nginx config and startup script
 COPY deploy/nginx.conf /etc/nginx/http.d/default.conf
 COPY deploy/nginx-https.conf /etc/nginx/nginx-https.conf
+COPY deploy/applogs.html /usr/share/nginx/applogs.html
 COPY deploy/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
