@@ -1,0 +1,28 @@
+# ============================================================
+#  Local LOG VIEWER only (nginx + Dozzle) — fast, ARM-friendly.
+#  Validates the production /logs/ SSE proxy fix without building
+#  the Java app.
+#
+#  Run:   docker compose -f docker-compose.logs-local.yml up -d
+#  Open:  http://localhost:8090/logs/      (login: admin / admin)
+#  Stop:  docker compose -f docker-compose.logs-local.yml down
+# ============================================================
+services:
+  dozzle:
+    image: amir20/dozzle:latest
+    environment:
+      DOZZLE_BASE: /logs
+      DOZZLE_NO_ANALYTICS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  logsproxy:
+    image: nginx:alpine
+    ports:
+      - "8090:80"
+    volumes:
+      - ./deploy/local/nginx-logs.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/local/.htpasswd:/etc/nginx/.htpasswd:ro
+    depends_on:
+      - dozzle
+
