@@ -43,6 +43,12 @@ function AdminRoute({ children }) {
   return isAdmin ? children : <Navigate to="/dashboard" replace />;
 }
 
+// Role-aware landing: product owner (ADMIN) → Tenants, tenant users → Dashboard
+function HomeRedirect() {
+  const { isAdmin } = useAuth();
+  return <Navigate to={isAdmin ? '/tenants' : '/dashboard'} replace />;
+}
+
 function ManagerRoute({ children }) {
   const { isAdmin, isManager } = useAuth();
   return (isAdmin || isManager) ? children : <Navigate to="/dashboard" replace />;
@@ -54,7 +60,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route index element={<HomeRedirect />} />
           <Route path="dashboard" element={<DashboardPage />} />
 
           <Route path="customers" element={<CustomerListPage />} />

@@ -14,9 +14,10 @@ export default function LoginPage() {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      await login(values.username, values.password);
+      const data = await login(values.username, values.password);
       message.success('Login successful');
-      navigate('/dashboard');
+      // Product owner (ADMIN) manages clients → land on Tenants; tenants → Dashboard
+      navigate(data?.role === 'ADMIN' ? '/tenants' : '/dashboard');
     } catch (err) {
       message.error(err.response?.data?.error || 'Login failed');
     } finally {

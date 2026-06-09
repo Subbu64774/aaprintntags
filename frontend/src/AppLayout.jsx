@@ -70,41 +70,44 @@ export default function AppLayout() {
 
   // Build menu based on role & permissions
   const menuItems = [];
-  menuItems.push({ key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' });
 
-  if (hasPerm('production_units:view'))
-    menuItems.push({ key: '/production-units', icon: <ShopOutlined />, label: menuLabel('Production Units', '/production-units/new', 'production_units:edit') });
-  if (hasPerm('employees:view'))
-    menuItems.push({ key: '/employees', icon: <TeamOutlined />, label: menuLabel('Employees', '/employees/new', 'employees:edit') });
-  if (hasPerm('customers:view'))
-    menuItems.push({ key: '/customers', icon: <UserOutlined />, label: menuLabel('Customers', '/customers/new', 'customers:edit') });
-  if (hasPerm('products:view'))
-    menuItems.push({ key: '/products', icon: <AppstoreOutlined />, label: menuLabel('Products', '/products/new', 'products:edit') });
-  if (hasPerm('orders:view'))
-    menuItems.push({ key: '/orders', icon: <ShoppingCartOutlined />, label: menuLabel('Purchase Orders', '/orders/new', 'orders:edit') });
-  if (hasPerm('invoices:view')) {
-    const invoiceChildren = [
-      { key: '/invoices', icon: <FileTextOutlined />, label: 'Manage Invoices' },
-    ];
-    if (hasPerm('invoices:edit')) {
-      invoiceChildren.unshift({ key: '/invoices/new', icon: <PlusOutlined />, label: 'Create Invoice' });
+  if (isAdmin) {
+    // ─── Product Owner (platform admin): manage CLIENTS & users only ───
+    // No tenant/client business operations or tenant dashboard here.
+    menuItems.push({ key: '/tenants', icon: <BankOutlined />, label: menuLabel('Tenants', '/tenants/new', null) });
+    menuItems.push({ key: '/users', icon: <UsergroupAddOutlined />, label: menuLabel('Users', '/users/new', null) });
+  } else {
+    // ─── Tenant (client business) operational menus ───
+    menuItems.push({ key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' });
+    if (hasPerm('production_units:view'))
+      menuItems.push({ key: '/production-units', icon: <ShopOutlined />, label: menuLabel('Production Units', '/production-units/new', 'production_units:edit') });
+    if (hasPerm('employees:view'))
+      menuItems.push({ key: '/employees', icon: <TeamOutlined />, label: menuLabel('Employees', '/employees/new', 'employees:edit') });
+    if (hasPerm('customers:view'))
+      menuItems.push({ key: '/customers', icon: <UserOutlined />, label: menuLabel('Customers', '/customers/new', 'customers:edit') });
+    if (hasPerm('products:view'))
+      menuItems.push({ key: '/products', icon: <AppstoreOutlined />, label: menuLabel('Products', '/products/new', 'products:edit') });
+    if (hasPerm('orders:view'))
+      menuItems.push({ key: '/orders', icon: <ShoppingCartOutlined />, label: menuLabel('Purchase Orders', '/orders/new', 'orders:edit') });
+    if (hasPerm('invoices:view')) {
+      const invoiceChildren = [
+        { key: '/invoices', icon: <FileTextOutlined />, label: 'Manage Invoices' },
+      ];
+      if (hasPerm('invoices:edit')) {
+        invoiceChildren.unshift({ key: '/invoices/new', icon: <PlusOutlined />, label: 'Create Invoice' });
+      }
+      menuItems.push({ key: 'invoices-menu', icon: <FileTextOutlined />, label: 'Invoices', children: invoiceChildren });
     }
-    menuItems.push({ key: 'invoices-menu', icon: <FileTextOutlined />, label: 'Invoices', children: invoiceChildren });
-  }
-  if (hasPerm('invoices:view'))
-    menuItems.push({ key: '/quotes', icon: <SnippetsOutlined />, label: menuLabel('Quotes', '/quotes/new', 'invoices:edit') });
-  if (hasPerm('payments:view'))
-    menuItems.push({ key: '/payments', icon: <DollarOutlined />, label: menuLabel('Payments', '/payments/new', 'payments:edit') });
-  if (hasPerm('reports:view'))
-    menuItems.push({ key: '/reports', icon: <BarChartOutlined />, label: 'Reports' });
+    if (hasPerm('invoices:view'))
+      menuItems.push({ key: '/quotes', icon: <SnippetsOutlined />, label: menuLabel('Quotes', '/quotes/new', 'invoices:edit') });
+    if (hasPerm('payments:view'))
+      menuItems.push({ key: '/payments', icon: <DollarOutlined />, label: menuLabel('Payments', '/payments/new', 'payments:edit') });
+    if (hasPerm('reports:view'))
+      menuItems.push({ key: '/reports', icon: <BarChartOutlined />, label: 'Reports' });
 
-  // Admin: Tenants + Users;  Manager: Users only
-  if (isAdmin || canManageUsers) {
-    menuItems.push({ type: 'divider' });
-    if (isAdmin) {
-      menuItems.push({ key: '/tenants', icon: <BankOutlined />, label: menuLabel('Tenants', '/tenants/new', null) });
-    }
+    // Tenant Manager can manage their own users
     if (canManageUsers) {
+      menuItems.push({ type: 'divider' });
       menuItems.push({ key: '/users', icon: <UsergroupAddOutlined />, label: menuLabel('Users', '/users/new', null) });
     }
   }
