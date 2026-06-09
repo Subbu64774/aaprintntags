@@ -42,6 +42,7 @@ build/
 !.env.example
 frontend/dist/
 frontend/node_modules/
+logs/
 
 ### BMAD tooling (local only) ###
 .agents/

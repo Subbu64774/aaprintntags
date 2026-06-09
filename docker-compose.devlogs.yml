@@ -1,0 +1,20 @@
+# ============================================================
+#  Dev log viewer for the IntelliJ-run app.
+#  Spring Boot writes to ./logs/salesapp.log (see application.properties);
+#  this serves a live, searchable browser view of that file.
+#
+#  Run:   docker compose -f docker-compose.devlogs.yml up -d
+#  Open:  http://localhost:9001
+#  Stop:  docker compose -f docker-compose.devlogs.yml down
+# ============================================================
+services:
+  devlogs:
+    image: mthenw/frontail:latest
+    platform: linux/amd64          # frontail has no arm64 image; runs emulated
+    container_name: salesapp-devlogs
+    command: ["/log/salesapp.log", "--ui-highlight", "--num-lines", "500"]
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./logs:/log:ro
+
