@@ -1,37 +1,30 @@
 #!/bin/bash
 # ╔══════════════════════════════════════════════════════════════╗
-# ║   AA Print N Tags — Enable HTTPS (Let's Encrypt)             ║
+# ║   AA Print N Tags — Provision HTTPS certificate (one-time)    ║
 # ║                                                              ║
-# ║  Issues a real, browser-trusted TLS certificate for the      ║
-# ║  sslip.io hostname that maps to the VM public IP — no         ║
-# ║  domain purchase required — then relaunches the app container ║
-# ║  on port 443 and installs an auto-renewal cron job.          ║
+# ║  Issues a real, browser-trusted Let's Encrypt certificate    ║
+# ║  for the sslip.io hostname that maps to the VM public IP     ║
+# ║  (no domain purchase needed) and installs an auto-renewal    ║
+# ║  cron job.                                                   ║
 # ║                                                              ║
-# ║  USAGE:  ./deploy/setup-https.sh                              ║
+# ║  The CI/CD pipeline (deploy/server-deploy.sh) automatically  ║
+# ║  detects the cert and serves the app on 443 — so after       ║
+# ║  running this once, just trigger a normal deploy.            ║
+# ║                                                              ║
+# ║  USAGE:  ./deploy/setup-https.sh                             ║
 # ╚══════════════════════════════════════════════════════════════╝
 set -euo pipefail
 
 VM_IP="140.245.210.80"
 DOMAIN="140-245-210-80.sslip.io"      # sslip.io → resolves to VM_IP automatically
 LE_EMAIL="admin@${DOMAIN}"            # used only for expiry notices
-SSH_KEY="/Users/subramanianganesan/Downloads/ssh-key-2026-03-20.key"
+SSH_KEY="${SSH_KEY:-$HOME/Downloads/ssh-key-2026-03-20.key}"
 SSH_USER="opc"
-PROJECT_ROOT="$(cd "$(dirname "$0")/.."; pwd)"
 
 chmod 600 "$SSH_KEY" 2>/dev/null || true
-SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=no -o ConnectTimeout=15"
-SSH_CMD="ssh $SSH_OPTS $SSH_USER@$VM_IP"
+SSH_CMD="ssh -i $SSH_KEY -o StrictHostKeyChecking=no -o ConnectTimeout=15 $SSH_USER@$VM_IP"
 
-echo "╔══════════════════════════════════════════════════════╗"
-echo "║   🔒 Enabling HTTPS for AA Print N Tags             ║"
-echo "╠══════════════════════════════════════════════════════╣"
-printf  "║   Host : %-44s║\n" "$DOMAIN"
-printf  "║   IP   : %-44s║\n" "$VM_IP"
-echo "╚══════════════════════════════════════════════════════╝"
-
-# Push the latest nginx.conf to the VM so the rebuilt image picks it up
-echo "── Syncing nginx.conf to VM..."
-scp $SSH_OPTS "$PROJECT_ROOT/deploy/nginx.conf" "$SSH_USER@$VM_IP:/home/opc/aaprintntags/deploy/nginx.conf"
+echo "🔒 Provisioning Let's Encrypt certificate for $DOMAIN ($VM_IP)"
 
 $SSH_CMD DOMAIN="$DOMAIN" LE_EMAIL="$LE_EMAIL" bash -s <<'REMOTE'
 set -e
@@ -45,58 +38,23 @@ sudo firewall-cmd --reload 2>/dev/null || true
 echo "── Preparing ACME webroot..."
 sudo mkdir -p /home/opc/certbot-www /etc/letsencrypt
 
-# ── Obtain (or renew) the certificate ──────────────────────────
 if sudo test -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem"; then
-  echo "✅ Certificate already exists for $DOMAIN — skipping issuance."
+  echo "✅ Certificate already exists for $DOMAIN — nothing to do."
 else
-  echo "── Issuing certificate via Let's Encrypt (standalone, port 80)..."
-  echo "   (app container is stopped briefly to free port 80)"
+  echo "── Issuing certificate (certbot standalone; app paused briefly on port 80)..."
   sudo podman stop aaprintntags-app 2>/dev/null || true
-
   sudo podman run --rm \
     -p 80:80 \
     -v /etc/letsencrypt:/etc/letsencrypt:Z \
     -v /home/opc/certbot-www:/var/www/certbot:Z \
     docker.io/certbot/certbot:latest certonly \
-      --standalone \
-      --non-interactive --agree-tos \
-      --email "$LE_EMAIL" \
-      --preferred-challenges http \
-      -d "$DOMAIN"
-
+      --standalone --non-interactive --agree-tos \
+      --email "$LE_EMAIL" --preferred-challenges http -d "$DOMAIN"
+  sudo podman start aaprintntags-app 2>/dev/null || true
   echo "✅ Certificate issued."
 fi
 
-# ── Relaunch the app container on 80 + 443 with cert mounts ─────
-echo "── Relaunching app container with HTTPS..."
-sudo podman rm -f aaprintntags-app 2>/dev/null || true
-sudo podman start aaprintntags-db 2>/dev/null || true
-
-# Re-use the existing image; mount the HTTPS nginx.conf + certs.
-# (No rebuild needed — the JAR + frontend are already baked in the image.)
-sudo podman run -d \
-  --name aaprintntags-app \
-  --network aaprintnet \
-  --restart always \
-  -p 80:80 \
-  -p 443:443 \
-  -e SPRING_DATASOURCE_URL='jdbc:mysql://aaprintntags-db:3306/aaprintntags?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC' \
-  -e SPRING_DATASOURCE_USERNAME=appuser \
-  -e SPRING_DATASOURCE_PASSWORD='AppUser@2026!' \
-  -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
-  -e SPRING_JPA_SHOW_SQL=false \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  -e APP_JWT_SECRET='4a6f686e446f6553616c65734170704a57545365637265744b65793230323621' \
-  -e APP_JWT_EXPIRATION_MS=86400000 \
-  -v app_logos:/app/logos:Z \
-  -v /home/opc/aaprintntags/deploy/nginx.conf:/etc/nginx/http.d/default.conf:ro \
-  -v /etc/letsencrypt:/etc/letsencrypt:ro \
-  -v /home/opc/certbot-www:/var/www/certbot:ro \
-  --memory=512m \
-  aaprintntags-app:latest
-
-# ── Auto-renewal: certbot webroot via the running nginx + reload ─
-echo "── Installing auto-renewal cron (runs twice daily)..."
+echo "── Installing auto-renewal cron (twice daily)..."
 sudo tee /usr/local/bin/aaprintntags-renew-cert.sh >/dev/null <<'RENEW'
 #!/bin/bash
 podman run --rm \
@@ -110,28 +68,10 @@ RENEW
 sudo chmod +x /usr/local/bin/aaprintntags-renew-cert.sh
 ( sudo crontab -l 2>/dev/null | grep -v aaprintntags-renew-cert; \
   echo "17 3,15 * * * /usr/local/bin/aaprintntags-renew-cert.sh" ) | sudo crontab -
-
-echo ""
-echo "── Container status:"
-sudo podman ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+echo "✅ Renewal cron installed."
 REMOTE
 
 echo ""
-echo "── Waiting 40s for the app to come up..."
-sleep 40
-CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://$DOMAIN/api/health" 2>/dev/null || echo "000")
-echo ""
-if [ "$CODE" = "200" ]; then
-  echo "╔══════════════════════════════════════════════════════╗"
-  echo "║   ✅ HTTPS IS LIVE                                   ║"
-  echo "║                                                      ║"
-  printf "║   🔒 https://%-39s ║\n" "$DOMAIN"
-  echo "║                                                      ║"
-  echo "║   HTTP automatically redirects to HTTPS.             ║"
-  echo "║   Cert auto-renews twice daily via cron.             ║"
-  echo "╚══════════════════════════════════════════════════════╝"
-else
-  echo "⚠️  HTTPS health check returned $CODE — give it another minute, then:"
-  echo "    curl -i https://$DOMAIN/api/health"
-fi
+echo "✅ Certificate ready. Now trigger a deploy (git push to main, or re-run the"
+echo "   GitHub Actions workflow) — the pipeline will serve the app on https://$DOMAIN"
 
