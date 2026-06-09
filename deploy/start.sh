@@ -15,6 +15,11 @@ else
   echo "[TLS] No certificate for '${CERT_DOMAIN:-<unset>}' → serving HTTP only"
 fi
 
+# Inject the container-DNS resolver for runtime upstreams (e.g. /logs → Dozzle)
+RESOLVER=$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf 2>/dev/null)
+[ -z "$RESOLVER" ] && RESOLVER=127.0.0.11
+sed -i "s/__RESOLVER__/${RESOLVER}/g" /etc/nginx/http.d/default.conf 2>/dev/null || true
+
 # Start nginx in background
 echo "[1/2] Starting Nginx (frontend)..."
 nginx

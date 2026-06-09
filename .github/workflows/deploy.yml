@@ -100,5 +100,7 @@ jobs:
              DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
              DB_ROOT_PASSWORD='${{ secrets.DB_ROOT_PASSWORD }}' \
              JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+             LOGS_USER='${{ secrets.LOGS_USER }}' \
+             LOGS_PASSWORD='${{ secrets.LOGS_PASSWORD }}' \
              ~/server-deploy.sh"
 

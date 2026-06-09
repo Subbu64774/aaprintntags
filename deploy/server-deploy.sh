@@ -21,11 +21,15 @@ DB_USER="${DB_USER:-appuser}"
 DB_PASSWORD="${DB_PASSWORD:-AppUser@2026!}"
 DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-StrongP@ss2026!}"
 JWT_SECRET="${JWT_SECRET:-4a6f686e446f6553616c65734170704a57545365637265744b65793230323621}"
+LOGS_USER="${LOGS_USER:-admin}"
+LOGS_PASSWORD="${LOGS_PASSWORD:-}"
 
 NETWORK="aaprintnet"
 DB_CONTAINER="aaprintntags-db"
 DB_VOLUME="mysql_data"
 APP_CONTAINER="aaprintntags-app"
+LOGS_CONTAINER="aaprintntags-logs"
+HTPASSWD_FILE="/home/opc/.htpasswd"
 LOGOS_VOLUME="app_logos"
 CERT_DOMAIN="${CERT_DOMAIN:-140-245-210-80.sslip.io}"
 CERTBOT_WEBROOT="/home/opc/certbot-www"
@@ -96,6 +100,56 @@ SVC
 fi
 
 # ───────────────────────────────────────────────────────────────
+#  Log viewer (Dozzle) — browser UI for container logs at /logs/
+#  Protected by nginx basic auth. Lightweight (~15MB), stateless.
+# ───────────────────────────────────────────────────────────────
+echo "━━━ [2b/6] Ensuring log viewer (Dozzle) ━━━"
+# Enable the podman API socket so Dozzle can read container logs
+sudo systemctl enable --now podman.socket >/dev/null 2>&1 || true
+
+# Write/refresh the basic-auth file (used by nginx /logs/) if a password is set
+if [ -n "$LOGS_PASSWORD" ]; then
+  echo "${LOGS_USER}:$(openssl passwd -apr1 "$LOGS_PASSWORD")" | sudo tee "$HTPASSWD_FILE" >/dev/null
+  sudo chmod 644 "$HTPASSWD_FILE"
+  echo "   Basic-auth file written for user '${LOGS_USER}'."
+elif ! sudo test -f "$HTPASSWD_FILE"; then
+  # Ensure the file exists so nginx doesn't error; deny-all until a password is set
+  echo "logs-disabled:!" | sudo tee "$HTPASSWD_FILE" >/dev/null
+  echo "   ⚠️  LOGS_PASSWORD not set — /logs locked until you set the secret."
+fi
+
+if sudo podman container exists "$LOGS_CONTAINER"; then
+  sudo podman start "$LOGS_CONTAINER" >/dev/null 2>&1 || true
+  echo "   Dozzle already present — ensured running."
+else
+  echo "   First-time provisioning of Dozzle..."
+  sudo podman run -d \
+    --name "$LOGS_CONTAINER" \
+    --network "$NETWORK" \
+    --restart always \
+    --security-opt label=disable \
+    -e DOZZLE_BASE=/logs \
+    -e DOZZLE_NO_ANALYTICS=true \
+    -v /run/podman/podman.sock:/var/run/docker.sock:ro \
+    --memory=96m \
+    docker.io/amir20/dozzle:latest >/dev/null
+  sudo tee /etc/systemd/system/aaprintntags-logs.service >/dev/null <<'SVC'
+[Unit]
+Description=SalesApp Log Viewer (Dozzle)
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/podman start aaprintntags-logs
+ExecStop=/usr/bin/podman stop -t 10 aaprintntags-logs
+[Install]
+WantedBy=multi-user.target
+SVC
+  sudo systemctl daemon-reload && sudo systemctl enable aaprintntags-logs.service
+fi
+
+# ───────────────────────────────────────────────────────────────
 #  Pull the new application image from GHCR
 # ───────────────────────────────────────────────────────────────
 echo "━━━ [3/6] Pulling new app image: $APP_IMAGE ━━━"
@@ -123,7 +177,6 @@ if sudo test -f "/etc/letsencrypt/live/${CERT_DOMAIN}/fullchain.pem"; then
     -e CERT_DOMAIN="$CERT_DOMAIN"
     -v /etc/letsencrypt:/etc/letsencrypt:ro
     -v "${CERTBOT_WEBROOT}:/var/www/certbot:ro"
-    --security-opt label=disable
   )
 else
   echo "   No TLS cert for ${CERT_DOMAIN} → HTTP only (run deploy/setup-https.sh to enable)."
@@ -150,6 +203,8 @@ run_app() {
     -e APP_JWT_SECRET="$JWT_SECRET" \
     -e APP_JWT_EXPIRATION_MS=86400000 \
     -v "${LOGOS_VOLUME}:/app/logos:Z" \
+    -v "${HTPASSWD_FILE}:/etc/nginx/.htpasswd:ro" \
+    --security-opt label=disable \
     --memory=640m \
     "$image"
 }
