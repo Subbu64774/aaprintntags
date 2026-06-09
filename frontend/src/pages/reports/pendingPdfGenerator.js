@@ -35,7 +35,7 @@ export default function generatePendingPdf(data, action = 'download') {
   };
 
   // ── Company Header ──
-  const tenantName = data.tenantName || 'AA PRINT N TAGS';
+  const tenantName = data.tenantName || '';
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(14);
   pdf.setTextColor(...navy);

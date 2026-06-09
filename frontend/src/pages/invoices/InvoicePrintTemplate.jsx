@@ -223,7 +223,7 @@ const InvoicePrintTemplate = forwardRef(({ invoice }, ref) => {
   const grand = taxable + totalTax;
 
   const tn = invoice.tenantName || '';
-  const logoSrc = invoice.tenantLogoUrl || '/aaprintntags_logo.png';
+  const logoSrc = invoice.tenantLogoUrl || '/salesapp_logo.png';
   const tenantAddr = invoice.tenantRegisteredAddress || '';
   const tenantGst = invoice.tenantGstNumber || '';
   const tenantPhone = invoice.tenantPhone || '';

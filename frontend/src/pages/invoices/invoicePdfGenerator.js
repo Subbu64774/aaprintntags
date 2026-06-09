@@ -73,7 +73,7 @@ export default async function generateInvoicePdf(invoice, action = 'download') {
   const ensureSpace = (needed) => { if (y + needed > H - 14) { pdf.addPage(); y = 14; } };
 
   // ── Load logo ──
-  const logoData = await loadImageAsDataUrl(invoice.tenantLogoUrl || '/aaprintntags_logo.png');
+  const logoData = await loadImageAsDataUrl(invoice.tenantLogoUrl || '/salesapp_logo.png');
 
   // ══════════════════════════════════════════════════════════
   // "Bill" — document title (centered, above header box)

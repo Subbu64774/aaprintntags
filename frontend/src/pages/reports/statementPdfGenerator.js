@@ -37,7 +37,7 @@ export default function generateStatementPdf(data, options = {}, action = 'downl
   };
 
   // ══════════ COMPANY HEADER (centered, like image) ══════════
-  const tenantName = data.tenantName || 'AA PRINT N TAGS';
+  const tenantName = data.tenantName || '';
 
   // Company name — bold, centered
   pdf.setFont('helvetica', 'bold');

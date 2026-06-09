@@ -59,6 +59,7 @@ public class DataSeeder implements CommandLineRunner {
             aapnt.setCity("Chennai");
             aapnt.setState("Tamil Nadu");
             aapnt.setCountry("India");
+            aapnt.setLogoUrl("/aaprintntags_logo.png"); // tenant's own brand on their documents
             aapnt.setPlan("PRO");
             aapnt.setActive(true);
             aapnt.setCreatedAt(LocalDateTime.now());

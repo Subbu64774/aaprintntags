@@ -32,7 +32,7 @@ function loadImageAsDataUrl(src, timeoutMs = 3000) {
 
 /**
  * Generate a Job Card PDF for a purchase order.
- * Layout inspired by the AA PRINT N TAGS job card style.
+ * Generic tenant-branded job card layout.
  */
 export default async function generateJobCardPdf(order, products) {
   const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
@@ -54,7 +54,7 @@ export default async function generateJobCardPdf(order, products) {
   (products || []).forEach((p) => { prodMap[p.productId] = p; });
 
   // Load logo
-  const logoUrl = order.tenantLogoUrl || '/aaprintntags_logo.png';
+  const logoUrl = order.tenantLogoUrl || '/salesapp_logo.png';
   const logoData = await loadImageAsDataUrl(logoUrl);
 
   const tenantName = str(order.tenantName);

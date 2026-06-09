@@ -145,7 +145,7 @@ export default function AppLayout() {
         borderBottom: isMobile ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.10)',
         marginBottom: 4,
       }}>
-        <img src="/aaprintntags_logo.png" alt="Sales App" style={{ maxHeight: 40, maxWidth: 160, objectFit: 'contain', filter: isMobile ? 'none' : 'brightness(0) invert(1)' }} />
+        <img src="/salesapp_logo.png" alt="Sales App" style={{ maxHeight: 40, maxWidth: 160, objectFit: 'contain', filter: isMobile ? 'none' : 'brightness(0) invert(1)' }} />
         <div style={{ color: isMobile ? '#333' : 'rgba(255,255,255,0.85)', fontWeight: 'bold', fontSize: 14, marginTop: 4 }}>Sales App</div>
       </div>
       <Menu

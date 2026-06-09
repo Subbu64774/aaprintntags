@@ -28,7 +28,7 @@ export default function LoginPage() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f0f2f5', padding: 16 }}>
       <Card style={{ width: '100%', maxWidth: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <img src="/aaprintntags_logo.png" alt="Sales App" style={{ maxHeight: 72, maxWidth: 200, objectFit: 'contain', marginBottom: 12 }} />
+          <img src="/salesapp_logo.png" alt="Sales App" style={{ maxHeight: 72, maxWidth: 200, objectFit: 'contain', marginBottom: 12 }} />
           <Title level={2} style={{ margin: 0 }}>Sales App</Title>
           <Text type="secondary">Sign in to your account</Text>
         </div>

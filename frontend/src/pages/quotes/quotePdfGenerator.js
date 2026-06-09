@@ -70,7 +70,7 @@ export default async function generateQuotePdf(quote, action = 'download') {
     if (y + needed > H - 16) { pdf.addPage(); y = 14; }
   };
 
-  const logoData = await loadImageAsDataUrl(quote.tenantLogoUrl || '/aaprintntags_logo.png');
+  const logoData = await loadImageAsDataUrl(quote.tenantLogoUrl || '/salesapp_logo.png');
 
   const tn = str(quote.tenantName);
   const customerName = quote.customerId

@@ -69,7 +69,7 @@ export default function TenantFormPage() {
           </Col>
           <Col xs={24} sm={16}>
             <Form.Item name="tenantName" label="Business Name" rules={[{ required: true, message: 'Required' }]}>
-              <Input placeholder="e.g. AA PRINT N TAGS" />
+              <Input placeholder="e.g. Acme Industries" />
             </Form.Item>
           </Col>
         </Row>

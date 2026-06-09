@@ -63,6 +63,13 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - If `TenantContext.getTenantId()` is null, throw `TenantContextException` — never proceed without tenant
 - Pattern: Services have a private `tenantId()` helper that does the null-check
 
+### Product vs Tenant Branding (White-Label SaaS)
+- This is a **product ("SalesApp")** sold by subscription to multiple client businesses (tenants). `aaprintntags` is just the FIRST tenant, NOT the product.
+- **Product brand** (logo `/salesapp_logo.png`, name "SalesApp") is shown on product surfaces: login page, app nav/header, generic fallbacks.
+- **Tenant brand** is per-client: each `Tenant` has `logoUrl`, `tenantName`, GST/bank/address. Client documents (invoices, quotes, job cards, reports) MUST use the tenant's own `tenantLogoUrl`/`tenantName`.
+- **NEVER hardcode a specific client's name or logo** (e.g., "AA PRINT N TAGS" / `aaprintntags_logo.png`) as a default anywhere. Fall back to the product logo or empty, never to a client's brand.
+- Product owner = `ADMIN` role (cross-tenant) who onboards new client tenants via `/api/tenants`. Tenant subscription is tracked on `Tenant.plan` (FREE/BASIC/PRO) + `subscriptionStart/End`.
+
 ### Authentication & Authorization
 
 - JWT token contains: `sub` (username), `role` (ADMIN/MANAGER/STAFF/VIEWER), `tenantId`
