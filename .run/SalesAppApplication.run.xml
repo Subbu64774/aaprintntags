@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SalesAppApplication" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.salesapp.SalesAppApplication" />
+    <module name="aaprintntags" />
+    <!-- Run from project root so logs/salesapp.log lands here (the dev log viewer tails it) -->
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
+
