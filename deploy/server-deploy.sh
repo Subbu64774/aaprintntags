@@ -27,6 +27,8 @@ DB_CONTAINER="aaprintntags-db"
 DB_VOLUME="mysql_data"
 APP_CONTAINER="aaprintntags-app"
 LOGOS_VOLUME="app_logos"
+CERT_DOMAIN="${CERT_DOMAIN:-140-245-210-80.sslip.io}"
+CERTBOT_WEBROOT="/home/opc/certbot-www"
 
 echo "━━━ [1/6] Ensuring podman network + volumes ━━━"
 sudo podman network exists "$NETWORK" || sudo podman network create "$NETWORK"
@@ -107,6 +109,27 @@ if sudo podman container exists "$APP_CONTAINER"; then
 fi
 
 # ───────────────────────────────────────────────────────────────
+#  Detect TLS: if a Let's Encrypt cert exists, serve HTTPS on 443.
+#  (Cert is provisioned once via deploy/setup-https.sh.)
+# ───────────────────────────────────────────────────────────────
+TLS_ARGS=()
+if sudo test -f "/etc/letsencrypt/live/${CERT_DOMAIN}/fullchain.pem"; then
+  echo "   TLS cert found for ${CERT_DOMAIN} → publishing HTTPS on 443."
+  sudo mkdir -p "$CERTBOT_WEBROOT"
+  sudo firewall-cmd --permanent --add-port=443/tcp >/dev/null 2>&1 || true
+  sudo firewall-cmd --reload >/dev/null 2>&1 || true
+  TLS_ARGS=(
+    -p 443:443
+    -e CERT_DOMAIN="$CERT_DOMAIN"
+    -v /etc/letsencrypt:/etc/letsencrypt:ro
+    -v "${CERTBOT_WEBROOT}:/var/www/certbot:ro"
+    --security-opt label=disable
+  )
+else
+  echo "   No TLS cert for ${CERT_DOMAIN} → HTTP only (run deploy/setup-https.sh to enable)."
+fi
+
+# ───────────────────────────────────────────────────────────────
 #  Replace ONLY the application container
 # ───────────────────────────────────────────────────────────────
 run_app() {
@@ -117,6 +140,7 @@ run_app() {
     --network "$NETWORK" \
     --restart always \
     -p 80:80 \
+    "${TLS_ARGS[@]}" \
     -e SPRING_DATASOURCE_URL="jdbc:mysql://${DB_CONTAINER}:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8" \
     -e SPRING_DATASOURCE_USERNAME="$DB_USER" \
     -e SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD" \

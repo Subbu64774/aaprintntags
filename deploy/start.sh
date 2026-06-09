@@ -5,6 +5,16 @@ echo "=========================================="
 echo "  AA Print N Tags - Starting Application"
 echo "=========================================="
 
+# ── Enable HTTPS only if a cert exists for $CERT_DOMAIN ──────────
+#   Otherwise fall back to the HTTP-only config baked in the image.
+if [ -n "${CERT_DOMAIN:-}" ] && [ -f "/etc/letsencrypt/live/${CERT_DOMAIN}/fullchain.pem" ]; then
+  echo "[TLS] Certificate found for ${CERT_DOMAIN} → enabling HTTPS"
+  sed "s/__DOMAIN__/${CERT_DOMAIN}/g" /etc/nginx/nginx-https.conf \
+      > /etc/nginx/http.d/default.conf
+else
+  echo "[TLS] No certificate for '${CERT_DOMAIN:-<unset>}' → serving HTTP only"
+fi
+
 # Start nginx in background
 echo "[1/2] Starting Nginx (frontend)..."
 nginx
