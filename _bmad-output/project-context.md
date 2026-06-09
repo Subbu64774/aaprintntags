@@ -84,7 +84,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 ### Backend Package-by-Feature Structure
 
 ```
-com.aaprint.{module}/
+com.salesapp.{module}/
   ├── controller/{Module}RestController.java
   ├── service/{Module}Service.java
   ├── entity/{Module}.java
@@ -94,7 +94,7 @@ com.aaprint.{module}/
 ```
 
 Modules: `tenant`, `order`, `customer`, `product`, `invoice`, `quote`, `payment`, `employee`, `productionunit`, `report`, `user`, `home/dashboard`
-Config: `com.aaprint.config` (security, web, tenant context, exception handler, data seeder)
+Config: `com.salesapp.config` (security, web, tenant context, exception handler, data seeder)
 
 ### Backend Coding Conventions
 
@@ -164,7 +164,7 @@ frontend/src/pages/{module}/
 ## Testing Rules
 
 - Backend: Spring Boot Test (`@SpringBootTest`)
-- Test location: `src/test/java/com/aaprint/`
+- Test location: `src/test/java/com/salesapp/`
 - Currently minimal test coverage — when adding tests:
   - Unit test services with mocked repositories
   - Always mock `TenantContext.getTenantId()` in service tests

@@ -8,7 +8,7 @@
 		<version>3.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.aaprint</groupId>
+	<groupId>com.salesapp</groupId>
 	<artifactId>aaprintntags</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>salesapp</name>
