@@ -31,3 +31,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### OS / secrets / local ###
+.DS_Store
+**/.DS_Store
+*.key
+*.pem
+.env
+.env.*
+!.env.example
+frontend/dist/
+frontend/node_modules/
+
+### BMAD tooling (local only) ###
+.agents/
+_bmad/
+

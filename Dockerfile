@@ -55,8 +55,8 @@ COPY deploy/nginx.conf /etc/nginx/http.d/default.conf
 COPY deploy/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# Expose nginx port (serves UI and (optionally) proxies API to backend)
-EXPOSE 80
+# Expose nginx ports (HTTP + HTTPS)
+EXPOSE 80 443
 
 # 🔎 HEALTHCHECK:
 # If nginx proxies /api/health to the backend, keep it on port 80:

@@ -319,6 +319,8 @@ public class InvoiceService {
         if (invoice.getCustomer() != null) {
             dto.setCustomerId(invoice.getCustomer().getCustomerId());
             dto.setCustomerName(invoice.getCustomer().getCustomerName());
+            dto.setCustomerPhone(invoice.getCustomer().getPhone());
+            dto.setCustomerGstNumber(invoice.getCustomer().getGstNumber());
         }
         if (invoice.getProductionUnit() != null) {
             dto.setProductionUnitId(invoice.getProductionUnit().getProductionUnitId());

@@ -139,9 +139,14 @@ export default function AppLayout() {
 
   const siderContent = (
     <>
-      <div style={{ textAlign: 'center', padding: '12px 8px 4px 8px' }}>
+      <div style={{
+        textAlign: 'center',
+        padding: '16px 8px 12px 8px',
+        borderBottom: isMobile ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.10)',
+        marginBottom: 4,
+      }}>
         <img src="/aaprintntags_logo.png" alt="Sales App" style={{ maxHeight: 40, maxWidth: 160, objectFit: 'contain', filter: isMobile ? 'none' : 'brightness(0) invert(1)' }} />
-        <div style={{ color: isMobile ? '#333' : '#fff', fontWeight: 'bold', fontSize: 14, marginTop: 4 }}>Sales App</div>
+        <div style={{ color: isMobile ? '#333' : 'rgba(255,255,255,0.85)', fontWeight: 'bold', fontSize: 14, marginTop: 4 }}>Sales App</div>
       </div>
       <Menu
         theme={isMobile ? 'light' : 'dark'}
@@ -155,10 +160,24 @@ export default function AppLayout() {
   );
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {/* Desktop Sidebar */}
+    /* Outer layout locked to viewport height — nothing outside this scrolls */
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
+      {/* Desktop Sidebar — scrolls independently if menu is long */}
       {!isMobile && (
-        <Sider breakpoint="lg" collapsedWidth="60" width={220}>
+        <Sider
+          breakpoint="lg"
+          collapsedWidth="60"
+          width={220}
+          style={{
+            height: '100vh',
+            overflow: 'auto',
+            position: 'sticky',
+            top: 0,
+            left: 0,
+            boxShadow: '2px 0 8px rgba(0,21,41,0.35)',
+            zIndex: 10,
+          }}
+        >
           {siderContent}
         </Sider>
       )}
@@ -177,18 +196,31 @@ export default function AppLayout() {
         </Drawer>
       )}
 
-      <Layout>
-        <Header style={{ background: '#fff', padding: isMobile ? '0 12px' : '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      {/* Right side: flex column, fills remaining viewport height */}
+      <Layout style={{ background: '#f0f2f5', display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+
+        {/* Header — always visible, never scrolls away */}
+        <Header style={{
+          background: '#001529',
+          padding: isMobile ? '0 12px' : '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+          boxShadow: '0 2px 8px rgba(0,21,41,0.45)',
+          flexShrink: 0,
+          zIndex: 100,
+        }}>
           <Space>
             {isMobile && (
-              <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} style={{ fontSize: 18 }} />
+              <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} style={{ fontSize: 18, color: 'rgba(255,255,255,0.85)' }} />
             )}
             {user?.tenantLogoUrl && (
-              <img src={user.tenantLogoUrl} alt="" style={{ height: 32, objectFit: 'contain' }} />
+              <img src={user.tenantLogoUrl} alt="" style={{ height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
             )}
-            {!isMobile && <span style={{ fontSize: 18, fontWeight: 600 }}>Sales App</span>}
+            {!isMobile && <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>Sales App</span>}
             {user?.tenantName && !isMobile && (
-              <Tag color="geekblue" style={{ fontSize: 13 }}>{user.tenantName}</Tag>
+              <Tag color="cyan" style={{ fontSize: 13 }}>{user.tenantName}</Tag>
             )}
           </Space>
           <Dropdown
@@ -197,12 +229,30 @@ export default function AppLayout() {
           >
             <Space style={{ cursor: 'pointer' }}>
               <Avatar icon={<UserOutlined />} style={{ backgroundColor: isAdmin ? '#f56a00' : isManager ? '#fa8c16' : '#1677ff' }} />
-              {!isMobile && <span>{user?.fullName || user?.username}</span>}
+              {!isMobile && <span style={{ color: 'rgba(255,255,255,0.85)' }}>{user?.fullName || user?.username}</span>}
             </Space>
           </Dropdown>
         </Header>
-        <Content style={{ margin: isMobile ? '12px 8px' : '24px', padding: isMobile ? 12 : 24, background: '#fff', borderRadius: 8 }}>
-          <Outlet />
+
+        {/* Content — the ONLY thing that scrolls */}
+        <Content style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: isMobile ? 12 : '20px 24px 24px',
+        }}>
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 8,
+              padding: isMobile ? 12 : 24,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+              minHeight: '100%',
+            }}
+          >
+            <div key={location.key} className="page-transition">
+              <Outlet />
+            </div>
+          </div>
         </Content>
       </Layout>
     </Layout>

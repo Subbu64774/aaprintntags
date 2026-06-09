@@ -20,6 +20,8 @@ public class InvoiceDTO {
     private String poNumber;
     private Long customerId;
     private String customerName;
+    private String customerPhone;
+    private String customerGstNumber;
 
     private Long productionUnitId;
     private String productionUnitName;

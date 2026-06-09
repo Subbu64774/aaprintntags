@@ -6,6 +6,36 @@ html, body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* ─── Page transition animation ─── */
+/* Triggered by wrapping <Outlet> in a div with key={location.key} */
+.page-transition {
+  animation: pageFadeSlideIn 0.22s ease;
+}
+
+@keyframes pageFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Sidebar: shadow creates depth between panels ─── */
+.ant-layout-sider {
+  box-shadow: 2px 0 10px rgba(0, 21, 41, 0.30);
+  z-index: 10;
+  position: relative;
+}
+
+/* Smooth sidebar collapse/expand */
+.ant-layout-sider,
+.ant-layout-sider-children {
+  transition: width 0.22s ease, flex 0.22s ease, max-width 0.22s ease, min-width 0.22s ease;
+}
+
 /* ─── Ant Design Card title + extra wrap on small screens ─── */
 @media (max-width: 576px) {
   .ant-card-head {

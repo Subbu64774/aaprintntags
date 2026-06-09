@@ -336,6 +336,7 @@ sudo podman run -d \
   --network aaprintnet \
   --restart always \
   -p 80:80 \
+  -p 443:443 \
   -e SPRING_DATASOURCE_URL='${JDBC_URL}' \
   -e SPRING_DATASOURCE_USERNAME='${DB_USER}' \
   -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \
@@ -345,6 +346,8 @@ sudo podman run -d \
   -e APP_JWT_SECRET='${JWT_SECRET}' \
   -e APP_JWT_EXPIRATION_MS=${JWT_EXPIRY} \
   -v app_logos:/app/logos:Z \
+  -v /etc/letsencrypt:/etc/letsencrypt:ro \
+  -v /home/opc/certbot-www:/var/www/certbot:ro \
   --memory=${APP_MEM} \
   --memory-swap=${APP_MEM} \
   aaprintntags-app:latest
