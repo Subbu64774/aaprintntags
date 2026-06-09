@@ -39,6 +39,8 @@ and add the following:
 | `DB_PASSWORD`        | a strong password (e.g. `openssl rand -base64 24`)                    |
 | `DB_ROOT_PASSWORD`   | a strong password                                                     |
 | `JWT_SECRET`         | `openssl rand -hex 32`                                                |
+| `LOGS_USER`          | username for the browser log viewer (e.g. `admin`)                    |
+| `LOGS_PASSWORD`      | strong password for the browser log viewer                           |
 
 > ⚠️ The `GITHUB_TOKEN` used to push/pull the image is **automatic** — you do NOT create it.
 
@@ -113,6 +115,19 @@ ssh -i ~/Downloads/ssh-key-2026-03-20.key opc@140.245.210.80 \
 ssh ... 'sudo podman pull ghcr.io/subbu64774/aaprintntags:<sha> && \
          APP_IMAGE=ghcr.io/subbu64774/aaprintntags:<sha> ... ~/server-deploy.sh'
 ```
+
+---
+
+## 6b. Browser log viewer (Dozzle)
+
+Live container logs in the browser, protected by basic auth and served over HTTPS:
+
+- **URL:** `https://140-245-210-80.sslip.io/logs/`
+- **Credentials:** the `LOGS_USER` / `LOGS_PASSWORD` GitHub secrets
+- Runs as a separate lightweight container `aaprintntags-logs` (Dozzle), reading the
+  Podman socket read-only. It is provisioned + kept running by `deploy/server-deploy.sh`.
+- nginx proxies `/logs/` to it with `auth_basic`; no extra public ports are opened.
+- To change the password: update the `LOGS_PASSWORD` secret and re-run the deploy.
 
 ---
 
