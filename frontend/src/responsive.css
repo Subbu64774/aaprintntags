@@ -9,13 +9,13 @@ html, body {
 /* ─── Page transition animation ─── */
 /* Triggered by wrapping <Outlet> in a div with key={location.key} */
 .page-transition {
-  animation: pageFadeSlideIn 0.22s ease;
+  animation: pageFadeSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes pageFadeSlideIn {
   from {
     opacity: 0;
-    transform: translateY(7px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -153,5 +153,132 @@ img {
   color: #1677ff;
   background: rgba(22, 119, 255, 0.1) !important;
   border-radius: 4px;
+}
+
+/* ─── Modern Card Styling ─── */
+.ant-card {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.ant-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.ant-card-head {
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(90deg, #fafbfc 0%, #f5f7fa 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Modern Button Styling ─── */
+.ant-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, #1677ff 0%, #0050b3 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+}
+
+.ant-btn-primary:hover {
+  box-shadow: 0 6px 16px rgba(22, 119, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ─── Modern Input Styling ─── */
+.ant-input,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker {
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.10) !important;
+  background-color: #fafbfc !important;
+  transition: all 0.2s !important;
+}
+
+.ant-input:focus,
+.ant-input-number:focus,
+.ant-select-focused .ant-select-selector,
+.ant-picker-focused .ant-picker-input {
+  border-color: #1677ff !important;
+  background-color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1) !important;
+}
+
+/* ─── Modern Table Styling ─── */
+.ant-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #f5f7fa 0%, #fafbfc 100%);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+}
+
+.ant-table-tbody > tr {
+  transition: background-color 0.25s ease;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: rgba(22, 119, 255, 0.04);
+}
+
+/* ─── Modern Tag Styling ─── */
+.ant-tag {
+  border-radius: 8px;
+  padding: 4px 12px;
+  border: none;
+}
+
+/* ─── Modern Modal/Drawer ─── */
+.ant-modal-content,
+.ant-drawer-content {
+  border-radius: 12px;
+}
+
+.ant-modal-header,
+.ant-drawer-header {
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Smooth Transitions ─── */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* ─── Scrollbar Styling ─── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* ─── Spinners & Loaders ─── */
+.ant-spin-dot i {
+  background-color: #1677ff;
 }
 

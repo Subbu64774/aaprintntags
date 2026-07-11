@@ -199,64 +199,67 @@ export default function AppLayout() {
         </Drawer>
       )}
 
-      {/* Right side: flex column, fills remaining viewport height */}
-      <Layout style={{ background: '#f0f2f5', display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+       {/* Right side: flex column, fills remaining viewport height */}
+       <Layout style={{ background: 'linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%)', display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
 
-        {/* Header — always visible, never scrolls away */}
-        <Header style={{
-          background: '#001529',
-          padding: isMobile ? '0 12px' : '0 24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 8,
-          boxShadow: '0 2px 8px rgba(0,21,41,0.45)',
-          flexShrink: 0,
-          zIndex: 100,
-        }}>
-          <Space>
-            {isMobile && (
-              <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} style={{ fontSize: 18, color: 'rgba(255,255,255,0.85)' }} />
-            )}
-            {user?.tenantLogoUrl && (
-              <img src={user.tenantLogoUrl} alt="" style={{ height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
-            )}
-            {!isMobile && <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>Sales App</span>}
-            {user?.tenantName && !isMobile && (
-              <Tag color="cyan" style={{ fontSize: 13 }}>{user.tenantName}</Tag>
-            )}
-          </Space>
-          <Dropdown
-            menu={{ items: userMenuItems, onClick: ({ key }) => { if (key === 'logout') handleLogout(); } }}
-            placement="bottomRight"
-          >
-            <Space style={{ cursor: 'pointer' }}>
-              <Avatar icon={<UserOutlined />} style={{ backgroundColor: isAdmin ? '#f56a00' : isManager ? '#fa8c16' : '#1677ff' }} />
-              {!isMobile && <span style={{ color: 'rgba(255,255,255,0.85)' }}>{user?.fullName || user?.username}</span>}
-            </Space>
-          </Dropdown>
-        </Header>
+         {/* Header — always visible, never scrolls away */}
+         <Header style={{
+           background: 'linear-gradient(90deg, #001529 0%, #003366 100%)',
+           padding: isMobile ? '0 12px' : '0 24px',
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'space-between',
+           gap: 8,
+           boxShadow: '0 4px 16px rgba(0,21,41,0.35)',
+           flexShrink: 0,
+           zIndex: 100,
+         }}>
+           <Space>
+             {isMobile && (
+               <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} style={{ fontSize: 18, color: 'rgba(255,255,255,0.85)' }} />
+             )}
+             {user?.tenantLogoUrl && (
+               <img src={user.tenantLogoUrl} alt="" style={{ height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+             )}
+             {!isMobile && <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>Sales App</span>}
+             {user?.tenantName && !isMobile && (
+               <Tag color="cyan" style={{ fontSize: 13 }}>{user.tenantName}</Tag>
+             )}
+           </Space>
+           <Dropdown
+             menu={{ items: userMenuItems, onClick: ({ key }) => { if (key === 'logout') handleLogout(); } }}
+             placement="bottomRight"
+           >
+             <Space style={{ cursor: 'pointer' }}>
+               <Avatar icon={<UserOutlined />} style={{ backgroundColor: isAdmin ? '#f56a00' : isManager ? '#fa8c16' : '#1677ff' }} />
+               {!isMobile && <span style={{ color: 'rgba(255,255,255,0.85)' }}>{user?.fullName || user?.username}</span>}
+             </Space>
+           </Dropdown>
+         </Header>
 
-        {/* Content — the ONLY thing that scrolls */}
-        <Content style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: isMobile ? 12 : '20px 24px 24px',
-        }}>
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: 8,
-              padding: isMobile ? 12 : 24,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-              minHeight: '100%',
-            }}
-          >
-            <div key={location.key} className="page-transition">
-              <Outlet />
-            </div>
-          </div>
-        </Content>
+         {/* Content — the ONLY thing that scrolls */}
+         <Content style={{
+           flex: 1,
+           overflowY: 'auto',
+           padding: isMobile ? '12px' : '24px',
+           background: 'transparent',
+         }}>
+           <div
+             style={{
+               background: '#fff',
+               borderRadius: '16px',
+               padding: isMobile ? '16px' : '32px',
+               boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+               minHeight: '100%',
+               backdropFilter: 'blur(10px)',
+               border: '1px solid rgba(255,255,255,0.8)',
+             }}
+           >
+             <div key={location.key} className="page-transition">
+               <Outlet />
+             </div>
+           </div>
+         </Content>
       </Layout>
     </Layout>
   );
