@@ -241,19 +241,20 @@ export default function AppLayout() {
          <Content style={{
            flex: 1,
            overflowY: 'auto',
-           padding: isMobile ? '12px' : '24px',
+           padding: isMobile ? '8px' : '12px',
            background: 'transparent',
          }}>
            <div
              style={{
                background: '#fff',
-               borderRadius: '16px',
+               borderRadius: isMobile ? '8px' : '12px',
                padding: isMobile ? '16px' : '32px',
                boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
                minHeight: '100%',
                backdropFilter: 'blur(10px)',
                border: '1px solid rgba(255,255,255,0.8)',
-             }}
+              margin: 0,
+            }}
            >
              <div key={location.key} className="page-transition">
                <Outlet />
