@@ -1,9 +1,16 @@
 /* ─── Global Mobile Responsive Overrides ─── */
 
-/* Ensure the viewport meta tag works correctly */
-html, body {
+/* Ensure the viewport meta tag works correctly and remove browser default gaps */
+html, body, #root {
+  height: 100%;
+  margin: 0; /* remove default 8px browser margin */
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
+}
+
+/* Use sensible box-sizing globally to avoid layout surprises */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 /* ─── Page transition animation ─── */
