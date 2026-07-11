@@ -251,10 +251,10 @@ export default function AppLayout() {
                padding: isMobile ? '16px' : '28px',
                boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
                minHeight: '100%',
-               backdropFilter: 'blur(6px)',
-               border: '1px solid rgba(0,0,0,0.06)',
-               margin: isMobile ? '8px' : '12px',
-               marginTop: isMobile ? '8px' : '-12px',
+                backdropFilter: 'blur(6px)',
+                border: 'none',
+                margin: isMobile ? '8px' : '12px',
+                marginTop: isMobile ? '8px' : '-14px',
                overflow: 'hidden',
              }}
            >
