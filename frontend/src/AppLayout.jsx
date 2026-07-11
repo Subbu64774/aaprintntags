@@ -248,6 +248,10 @@ export default function AppLayout() {
              style={{
                background: '#fff',
                borderRadius: isMobile ? '8px' : '12px',
+               borderTopLeftRadius: isMobile ? '8px' : '0px',
+               borderTopRightRadius: isMobile ? '8px' : '12px',
+               borderBottomLeftRadius: isMobile ? '8px' : '12px',
+               borderBottomRightRadius: isMobile ? '8px' : '12px',
                padding: isMobile ? '16px' : '28px',
                boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
                minHeight: '100%',
